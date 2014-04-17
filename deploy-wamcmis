@@ -1,16 +1,23 @@
 #!/bin/bash
+#
+# WAM CMIS (providence) deployment script
+#
+# This script currently only manages code update deployments, and does not handle
+# initial setup or updates involving a database migration.
+#
 
+# Defaults
 clonePath=/data/github/providence
 targetParentPath=/data/cmis/collectiveaccess/providence
 tagName=$(date +%Y%m%d%H%M%S)
 symlinkName=current
-
 skipPull=false
 skipDeploy=false
 skipLink=false
 skipRestartServer=false
 skipPushTag=false
 
+# Parse parameters
 invalidParameters=""
 showHelp=false
 for opt in "$@"; do
@@ -55,6 +62,7 @@ for opt in "$@"; do
 	esac
 done
 
+# Show errors and/or usage
 if [[ "$invalidParameters" != "" || $showHelp = true ]]; then
 	if [[ $showHelp != true ]]; then
 		cat << ENDERROR
@@ -63,6 +71,7 @@ ERROR:
 
 ENDERROR
 	fi
+
 	cat << ENDHELP
 USAGE:
     ${0##*/} [OPTIONS]
@@ -87,9 +96,11 @@ ENDHELP
 	exit
 fi
 
+# Composite variables
 targetPath=$targetParentPath/$tagName
 targetSymlinkPath=$targetParentPath/$symlinkName
 
+# Process steps...
 if [ $skipPull = false ]; then
 	echo "Pulling latest changes from remote git repository..."
 	pushd "$clonePath"
@@ -127,5 +138,6 @@ if [ $skipPushTag = false ]; then
 	echo "Done adding a tag for the deployed version"
 fi
 
+# $SECONDS is a magic per-script variable given by bash
 echo "DEPLOYMENT COMPLETED IN $SECONDS SECONDS"
 
