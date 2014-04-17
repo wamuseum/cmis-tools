@@ -6,7 +6,7 @@ Tools for the WAM CMIS project
 deploy-wamcmis
 --------------
 
-It is recommended to run this script under a user(s) with password-less sudo access for the `service` command.  To set this up, add the following to your `/etc/sudoers` file:
+It is recommended to run this script under a user(s) with password-less sudo access for the `service` command.  To set this up, add the following to your `/etc/sudoers` file (you might need to add the writable flag to the file first):
 
     %deployers	ALL = NOPASSWD: /usr/sbin/service
 
