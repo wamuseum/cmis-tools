@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# TODO Allow skipping steps and overriding paths through arguments
+
+clonePath=/data/github/providence
+targetParentPath=/data/cmis/collectiveaccess/providence
+tagName=$(date +%Y%m%d%H%M%S)
+targetPath=$targetParentPath/$tagName
+targetSymlinkPath=$targetParentPath/current
+
+echo "Fetching latest changes from remote git repository..."
+pushd "$clonePath"
+git checkout master
+git pull origin master
+popd
+
+echo "Deploying latest changes to staging directory..."
+cp -R "$targetSymlinkPath" "$targetPath"
+rsync -a --exclude=".git*" --delete --delete-excluded "$clonePath" "$targetPath"
+
+echo "Linking production to staging directory..."
+if [[ -h $targetSymlinkPath ]]; then  # -h = "exists and is a symbolic link"
+	rm $targetSymlinkPath
+fi
+ln -s $targetPath $targetSymlinkPath
+
+echo "Restarting web server..."
+sudo service apache2 restart
+
+# TODO Make tag and push back up to remote
