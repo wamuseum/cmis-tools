@@ -112,7 +112,7 @@ fi
 
 if [ $skipDeploy = false ]; then
 	echo "Deploying latest changes to staging directory..."
-	cp -R "$targetSymlinkPath" "$targetPath"
+	cp -R "$targetSymlinkPath/" "$targetPath"
 	rsync -a --exclude=".git*" --delete --delete-excluded "$clonePath" "$targetPath"
 	echo "Done deploying latest changes to staging directory"
 fi
