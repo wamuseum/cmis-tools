@@ -1,30 +1,131 @@
 #!/bin/bash
 
-# TODO Allow skipping steps and overriding paths through arguments
-
 clonePath=/data/github/providence
 targetParentPath=/data/cmis/collectiveaccess/providence
 tagName=$(date +%Y%m%d%H%M%S)
-targetPath=$targetParentPath/$tagName
-targetSymlinkPath=$targetParentPath/current
+symlinkName=current
 
-echo "Fetching latest changes from remote git repository..."
-pushd "$clonePath"
-git checkout master
-git pull origin master
-popd
+skipPull=false
+skipDeploy=false
+skipLink=false
+skipRestartServer=false
+skipPushTag=false
 
-echo "Deploying latest changes to staging directory..."
-cp -R "$targetSymlinkPath" "$targetPath"
-rsync -a --exclude=".git*" --delete --delete-excluded "$clonePath" "$targetPath"
+invalidParameters=""
+showHelp=false
+for opt in "$@"; do
+	case "$opt" in
+		--clone-path=*)
+			clonePath="${opt#*=}"
+		;;
+		--target-parent-path=*)
+			targetParentPath="${opt#*=}"
+		;;
+		--tag-name=*)
+			tagName="${opt#*=}"
+		;;
+		--symlink-name=*)
+			symlinkName="${opt#*=}"
+		;;
+		--skip-pull)
+			skipPull=true
+		;;
+		--skip-deploy)
+			skipDeploy=true
+		;;
+		--skip-link)
+			skipLink=true
+		;;
+		--skip-restart-server)
+			skipRestartServer=true
+		;;
+		--skip-push-tag)
+			skipPushTag=true
+		;;
+		-h|--help)
+			showHelp=true
+		;;
+		*)
+			if [[ "$invalidParameters" == "" ]]; then
+				invalidParameters=$opt
+			else
+				invalidParameters="$invalidParameters, $opt"
+			fi
+		;;
+	esac
+done
 
-echo "Linking production to staging directory..."
-if [[ -h $targetSymlinkPath ]]; then  # -h = "exists and is a symbolic link"
-	rm $targetSymlinkPath
+if [[ "$invalidParameters" != "" || $showHelp = true ]]; then
+	if [[ $showHelp != true ]]; then
+		cat << ENDERROR
+ERROR:
+    Invalid parameters: $invalidParameters
+
+ENDERROR
+	fi
+	cat << ENDHELP
+USAGE:
+    ${0##*/} [OPTIONS]
+
+OPTIONS:
+    --clone-path=<path>         The path where the local git clone exists
+    --target-parent-path=<path> The path containing deployment subdirectories
+    --tag-name=<name>           The name of the tag, this is used for the local
+                                subdirectory name and (optionally) to create a
+                                tag in the git repository
+    --symlink-name=<name>       The name of the symlink to create; this should
+                                match the server config
+    --skip-pull                 Don't pull latest changes from upstream
+    --skip-deploy               Don't copy changes from the git clone to the
+                                target directory
+    --skip-link                 Don't create a new link in the target directory
+    --skip-restart-server       Don't restart the web server
+    --skip-push-tag             Don't create and push a tag in the repository
+    -h, --help                  Show this help text and quit
+
+ENDHELP
+	exit
 fi
-ln -s $targetPath $targetSymlinkPath
 
-echo "Restarting web server..."
-sudo service apache2 restart
+targetPath=$targetParentPath/$tagName
+targetSymlinkPath=$targetParentPath/$symlinkName
 
-# TODO Make tag and push back up to remote
+if [ $skipPull = false ]; then
+	echo "Pulling latest changes from remote git repository..."
+	pushd "$clonePath"
+	git checkout master
+	git pull origin master
+	popd
+	echo "Done pulling latest changes from remote git repository"
+fi
+
+if [ $skipDeploy = false ]; then
+	echo "Deploying latest changes to staging directory..."
+	cp -R "$targetSymlinkPath" "$targetPath"
+	rsync -a --exclude=".git*" --delete --delete-excluded "$clonePath" "$targetPath"
+	echo "Done deploying latest changes to staging directory"
+fi
+
+if [ $skipLink = false ]; then
+	echo "Linking production to staging directory..."
+	if [[ -h $targetSymlinkPath ]]; then  # -h = "exists and is a symbolic link"
+		rm $targetSymlinkPath
+	fi
+	ln -s $targetPath $targetSymlinkPath
+	echo "Done linking production to staging directory"
+fi
+
+if [ $skipRestartServer = false ]; then
+	echo "Restarting web server..."
+	sudo service apache2 restart
+	echo "Done restarting web server"
+fi
+
+if [ $skipPushTag = false ]; then
+	echo "Adding a tag for the deployed version..."
+	# TODO Make tag and push back up to remote
+	echo "Done adding a tag for the deployed version"
+fi
+
+echo "DEPLOYMENT COMPLETED IN $SECONDS SECONDS"
+
