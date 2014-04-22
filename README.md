@@ -1,10 +1,10 @@
-= cmis-tools =
+# cmis-tools
 
 Tools for the WAM CMIS project
 
-== deploy-wamcmis ==
+## deploy-wamcmis
 
-=== Configuration ===
+### Configuration
 
 It is recommended to run this script under a user(s) with password-less sudo access for the `service` command.
 To set this up, add the following to your `/etc/sudoers` file (you might need to add the writable flag to the file first):
@@ -18,7 +18,7 @@ Then create the `deployers` group and add the relevant user(s) to it:
 
 This will allow the user(s) to restart the web server automatically whenever a deployment is performed.
 
-=== Execution ===
+### Execution
 
     USAGE:
         deploy-wamcmis [OPTIONS]
@@ -37,7 +37,6 @@ This will allow the user(s) to restart the web server automatically whenever a d
         -T, --skip-push-tag                    Don't create and push a tag in the repository.
         -h, --help                             Show this help text and quit.
 
-switchdb
---------
+## switchdb
 
 This is a development tool which automates switching in of a relevant setup file, which allows use of different databases and configurations.
