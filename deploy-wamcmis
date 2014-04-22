@@ -9,6 +9,7 @@
 # Defaults
 clonePath=/data/github/providence
 targetParentPath=/data/cmis/collectiveaccess/providence
+tagPrefix=wamuseum_
 tagName=$(date +%Y%m%d%H%M%S)
 symlinkName=current
 skipPull=false
@@ -30,6 +31,9 @@ for opt in "$@"; do
 		;;
 		-t=*|--tag-name=*)
 			tagName="${opt#*=}"
+		;;
+		-x=*|--tag-prefix=*)
+			tagPrefix="${opt#*=}"
 		;;
 		-s=*|--symlink-name=*)
 			symlinkName="${opt#*=}"
@@ -78,6 +82,7 @@ fi
 # Composite variables
 targetPath=$targetParentPath/$tagName
 targetSymlinkPath=$targetParentPath/$symlinkName
+tagFullName=$tagPrefix$tagName
 
 # Path checking
 if [ ! -d $clonePath ]; then
@@ -154,9 +159,13 @@ if [ $skipRestartServer = false ]; then
 	echo "Done restarting web server"
 fi
 
+# TODO Username and password required here for https clones, can we work around this or do we have to use ssh?
 if [ $skipPushTag = false ]; then
 	echo "Adding a tag for the deployed version..."
-	# TODO Make tag and push back up to remote
+	pushd "$clonePath" >/dev/null
+	git tag -a "$tagFullName" -m "Tagging $tagFullName [from deployment script, deploy-wamcmis]"
+	git push origin "$tagFullName"
+	popd >/dev/null
 	echo "Done adding a tag for the deployed version"
 fi
 
