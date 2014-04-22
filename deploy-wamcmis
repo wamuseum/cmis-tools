@@ -18,58 +18,86 @@ skipRestartServer=false
 skipPushTag=false
 
 # Parse parameters
-invalidParameters=""
+declare -a errors
 showHelp=false
 for opt in "$@"; do
 	case "$opt" in
-		--clone-path=*)
+		-c=*|--clone-path=*)
 			clonePath="${opt#*=}"
 		;;
-		--target-parent-path=*)
+		-p=*|--target-parent-path=*)
 			targetParentPath="${opt#*=}"
 		;;
-		--tag-name=*)
+		-t=*|--tag-name=*)
 			tagName="${opt#*=}"
 		;;
-		--symlink-name=*)
+		-s=*|--symlink-name=*)
 			symlinkName="${opt#*=}"
 		;;
-		--skip-pull)
+		-P|--skip-pull)
 			skipPull=true
 		;;
-		--skip-deploy)
+		-D|--skip-deploy)
 			skipDeploy=true
 		;;
-		--skip-link)
+		-L|--skip-link)
 			skipLink=true
 		;;
-		--skip-restart-server)
+		-R|--skip-restart-server)
 			skipRestartServer=true
 		;;
-		--skip-push-tag)
+		-T|--skip-push-tag)
 			skipPushTag=true
 		;;
 		-h|--help)
 			showHelp=true
 		;;
+		*=*)
+			errors[${#errors[@]}]="Unrecognised option: ${opt%=*} with value: ${opt#*=}"
+		;;
 		*)
-			if [[ "$invalidParameters" == "" ]]; then
-				invalidParameters=$opt
-			else
-				invalidParameters="$invalidParameters, $opt"
-			fi
+			errors[${#errors[@]}]="Unrecognised option: $opt with no value"
 		;;
 	esac
 done
 
-# Show errors and/or usage
-if [[ "$invalidParameters" != "" || $showHelp = true ]]; then
-	if [[ $showHelp != true ]]; then
-		cat << ENDERROR
-ERROR:
-    Invalid parameters: $invalidParameters
+# Sanity check options
+if [[ "$clonePath" = "" ]]; then
+	errors[${#errors[@]}]="Empty clone path specified"
+fi
+if [[ "$targetParentPath" = "" ]]; then
+	errors[${#errors[@]}]="Empty target parent path specified"
+fi
+if [[ "$tagName" = "" ]]; then
+	errors[${#errors[@]}]="Empty tag name specified"
+fi
+if [[ "$symlinkName" = "" ]]; then
+	errors[${#errors[@]}]="Empty symlink name specified"
+fi
 
-ENDERROR
+# Composite variables
+targetPath=$targetParentPath/$tagName
+targetSymlinkPath=$targetParentPath/$symlinkName
+
+# Path checking
+if [ ! -d $clonePath ]; then
+    errors[${#errors[@]}]="Cloned repository path does not exist: $clonePath"
+fi
+if [ ! -d $targetParentPath ]; then
+    errors[${#errors[@]}]="Target parent path does not exist: $targetParentPath"
+fi
+if [ -d $targetPath ]; then
+    errors[${#errors[@]}]="Tag directory already exists: $tagName"
+fi
+
+# Show errors and/or usage
+if [[ ${#errors[@]} > 0 || $showHelp = true ]]; then
+	if [[ $showHelp != true ]]; then
+		echo "ERRORS:"
+		for error in "${errors[@]}"; do
+			echo "    $error"
+		done
+		echo ""
 	fi
 
 	cat << ENDHELP
@@ -77,36 +105,30 @@ USAGE:
     ${0##*/} [OPTIONS]
 
 OPTIONS:
-    --clone-path=<path>         The path where the local git clone exists
-    --target-parent-path=<path> The path containing deployment subdirectories
-    --tag-name=<name>           The name of the tag, this is used for the local
-                                subdirectory name and (optionally) to create a
-                                tag in the git repository
-    --symlink-name=<name>       The name of the symlink to create; this should
-                                match the server config
-    --skip-pull                 Don't pull latest changes from upstream
-    --skip-deploy               Don't copy changes from the git clone to the
-                                target directory
-    --skip-link                 Don't create a new link in the target directory
-    --skip-restart-server       Don't restart the web server
-    --skip-push-tag             Don't create and push a tag in the repository
-    -h, --help                  Show this help text and quit
+    -c=<path>, --clone-path=<path>         The path to the local git clone.
+    -p=<path>, --target-parent-path=<path> The path containing deployment subdirectories.
+    -t=<name>, --tag-name=<name>           The name of the tag, this is used for the local subdir
+                                           name and (optionally) to create a tag in the repo.
+    -s=<name>, --symlink-name=<name>       The name of the symlink to create; this should match
+                                           the server configuration.
+    -P, --skip-pull                        Don't pull latest changes from upstream repository.
+    -D, --skip-deploy                      Don't copy changes from the git clone to the target.
+    -L, --skip-link                        Don't create a new link in the target directory.
+    -R, --skip-restart-server              Don't restart the web server.
+    -T, --skip-push-tag                    Don't create and push a tag in the repository.
+    -h, --help                             Show this help text and quit.
 
 ENDHELP
 	exit
 fi
 
-# Composite variables
-targetPath=$targetParentPath/$tagName
-targetSymlinkPath=$targetParentPath/$symlinkName
-
 # Process steps...
 if [ $skipPull = false ]; then
 	echo "Pulling latest changes from remote git repository..."
-	pushd "$clonePath"
+	pushd "$clonePath" >/dev/null
 	git checkout master
 	git pull origin master
-	popd
+	popd >/dev/null
 	echo "Done pulling latest changes from remote git repository"
 fi
 
@@ -138,6 +160,5 @@ if [ $skipPushTag = false ]; then
 	echo "Done adding a tag for the deployed version"
 fi
 
-# $SECONDS is a magic per-script variable given by bash
+# $SECONDS is a magic, per-script variable given by bash
 echo "DEPLOYMENT COMPLETED IN $SECONDS SECONDS"
-
