@@ -114,6 +114,8 @@ OPTIONS:
     -p=<path>, --target-parent-path=<path> The path containing deployment subdirectories.
     -t=<name>, --tag-name=<name>           The name of the tag, this is used for the local subdir
                                            name and (optionally) to create a tag in the repo.
+    -x=<prefix>, --tag-prefix=<prefix>     The prefix to use before the tag name, this is used for
+                                           the tag in the repo only (not the local subdir name).
     -s=<name>, --symlink-name=<name>       The name of the symlink to create; this should match
                                            the server configuration.
     -P, --skip-pull                        Don't pull latest changes from upstream repository.
@@ -159,7 +161,6 @@ if [ $skipRestartServer = false ]; then
 	echo "Done restarting web server"
 fi
 
-# TODO Username and password required here for https clones, can we work around this or do we have to use ssh?
 if [ $skipPushTag = false ]; then
 	echo "Adding a tag for the deployed version..."
 	pushd "$clonePath" >/dev/null
