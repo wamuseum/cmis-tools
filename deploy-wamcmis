@@ -80,9 +80,9 @@ if [[ "$symlinkName" = "" ]]; then
 fi
 
 # Composite variables
-targetPath=$targetParentPath/$tagName
-targetSymlinkPath=$targetParentPath/$symlinkName
-tagFullName=$tagPrefix$tagName
+targetPath="$targetParentPath/$tagName"
+targetSymlinkPath="$targetParentPath/$symlinkName"
+tagFullName="$tagPrefix$tagName"
 
 # Path checking
 if [ ! -d $clonePath ]; then
