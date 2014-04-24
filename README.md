@@ -45,21 +45,23 @@ The script will normally perform the following five steps, each of which may be 
     USAGE:
         deploy-wamcmis [OPTIONS]
 
-    OPTIONS:
-        -c=<path>, --clone-path=<path>         The path to the local git clone.
-        -p=<path>, --target-parent-path=<path> The path containing deployment subdirectories.
-        -t=<name>, --tag-name=<name>           The name of the tag, this is used for the local subdir
-                                               name and (optionally) to create a tag in the repo.
-        -x=<prefix>, --symlink-prefix=<prefix> The prefix to use before the tag name, this is used for
-                                               the tag in the repo only (not the local subdir name).
-        -s=<name>, --symlink-name=<name>       The name of the symlink to create; this should match
-                                               the server configuration.
-        -P, --skip-pull                        Don't pull latest changes from upstream repository.
-        -D, --skip-deploy                      Don't copy changes from the git clone to the target.
-        -L, --skip-link                        Don't create a new link in the target directory.
-        -R, --skip-restart-server              Don't restart the web server.
-        -T, --skip-push-tag                    Don't create and push a tag in the repository.
-        -h, --help                             Show this help text and quit.
+OPTIONS:
+    -c, --clone-path=PATH         Path to the local git clone
+    -p, --target-parent-path=PATH Path containing deployment subdirs
+    -t, --tag-name=NAME           Name of the tag, this is used for the local
+                                  subdir name and (optionally) to create a tag
+                                  in the repo
+    -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
+                                  used for tag name only (not local subdir)
+    -s, --symlink-name=NAME       Name of the symlink to create; this should
+                                  match server configuration
+    -r, --restart-service=SERVICE Name of service to restart
+    -P, --skip-pull               Don't pull latest changes from upstream
+    -D, --skip-deploy             Don't copy changes from clone to target
+    -L, --skip-link               Don't create a new link in target directory
+    -R, --skip-restart-server     Don't restart any service
+    -T, --skip-push-tag           Don't create and push a tag
+    -h, --help                    Show this help text and quit
 
 Notes:
 

@@ -12,10 +12,11 @@ targetParentPath=/data/cmis/collectiveaccess/providence
 tagPrefix=wamuseum_
 tagName=$(date +%Y%m%d%H%M%S)
 symlinkName=current
+service=php5-fpm
 skipPull=false
 skipDeploy=false
 skipLink=false
-skipRestartServer=false
+skipRestartService=false
 skipPushTag=false
 
 # Parse parameters
@@ -38,6 +39,9 @@ for opt in "$@"; do
 		-s=*|--symlink-name=*)
 			symlinkName="${opt#*=}"
 		;;
+		-r=*|--restart-service=*)
+			service="${opt#*=}"
+		;;
 		-P|--skip-pull)
 			skipPull=true
 		;;
@@ -47,8 +51,8 @@ for opt in "$@"; do
 		-L|--skip-link)
 			skipLink=true
 		;;
-		-R|--skip-restart-server)
-			skipRestartServer=true
+		-R|--skip-restart-service)
+			skipRestartService=true
 		;;
 		-T|--skip-push-tag)
 			skipPushTag=true
@@ -73,10 +77,15 @@ if [[ "$targetParentPath" = "" ]]; then
 	errors[${#errors[@]}]="Empty target parent path specified"
 fi
 if [[ "$tagName" = "" ]]; then
-	errors[${#errors[@]}]="Empty tag name specified"
+	errors[${#errors[@]}]="Empty tag name specified, use -T to skip tagging"
 fi
 if [[ "$symlinkName" = "" ]]; then
-	errors[${#errors[@]}]="Empty symlink name specified"
+	errors[${#errors[@]}]="Empty symlink name specified, use -L to skip linking"
+fi
+if [[ "$service" = "" ]]; then
+	errors[${#errors[@]}]="Empty service name specified, use -R to skip restarting service"
+elif [ ! -e "/etc/init.d/$service" ]; then
+	errors[${#errors[@]}]="Non-existent service name $service specified, use -R to skip restarting service"
 fi
 
 # Composite variables
@@ -110,20 +119,22 @@ USAGE:
     ${0##*/} [OPTIONS]
 
 OPTIONS:
-    -c=<path>, --clone-path=<path>         The path to the local git clone.
-    -p=<path>, --target-parent-path=<path> The path containing deployment subdirectories.
-    -t=<name>, --tag-name=<name>           The name of the tag, this is used for the local subdir
-                                           name and (optionally) to create a tag in the repo.
-    -x=<prefix>, --tag-prefix=<prefix>     The prefix to use before the tag name, this is used for
-                                           the tag in the repo only (not the local subdir name).
-    -s=<name>, --symlink-name=<name>       The name of the symlink to create; this should match
-                                           the server configuration.
-    -P, --skip-pull                        Don't pull latest changes from upstream repository.
-    -D, --skip-deploy                      Don't copy changes from the git clone to the target.
-    -L, --skip-link                        Don't create a new link in the target directory.
-    -R, --skip-restart-server              Don't restart the PHP server (php5-fpm).
-    -T, --skip-push-tag                    Don't create and push a tag in the repository.
-    -h, --help                             Show this help text and quit.
+    -c, --clone-path=PATH         Path to the local git clone
+    -p, --target-parent-path=PATH Path containing deployment subdirs
+    -t, --tag-name=NAME           Name of the tag, this is used for the local
+                                  subdir name and (optionally) to create a tag
+                                  in the repo
+    -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
+                                  used for tag name only (not local subdir)
+    -s, --symlink-name=NAME       Name of the symlink to create; this should
+                                  match server configuration
+    -r, --restart-service=SERVICE Name of service to restart
+    -P, --skip-pull               Don't pull latest changes from upstream
+    -D, --skip-deploy             Don't copy changes from clone to target
+    -L, --skip-link               Don't create a new link in target directory
+    -R, --skip-restart-server     Don't restart any service
+    -T, --skip-push-tag           Don't create and push a tag
+    -h, --help                    Show this help text and quit
 
 ENDHELP
 	exit
@@ -141,7 +152,9 @@ fi
 
 if [ $skipDeploy = false ]; then
 	echo "Deploying latest changes to staging directory..."
-	cp -R "$targetSymlinkPath/" "$targetPath"
+	if [ -e "$targetSymlinkPath" ]; then
+		cp -R "$targetSymlinkPath/" "$targetPath"
+	fi
 	rsync -a --exclude=".git*" --delete --delete-excluded "$clonePath" "$targetPath"
 	echo "Done deploying latest changes to staging directory"
 fi
@@ -155,10 +168,10 @@ if [ $skipLink = false ]; then
 	echo "Done linking production to staging directory"
 fi
 
-if [ $skipRestartServer = false ]; then
-	echo "Restarting PHP FPM..."
-	sudo service php5-fpm restart
-	echo "Done restarting PHP FPM"
+if [ $skipRestartService = false ]; then
+	echo "Restarting service $service..."
+	sudo service $service restart
+	echo "Done restarting service $service"
 fi
 
 if [ $skipPushTag = false ]; then
