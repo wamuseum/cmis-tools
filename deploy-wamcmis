@@ -121,7 +121,7 @@ OPTIONS:
     -P, --skip-pull                        Don't pull latest changes from upstream repository.
     -D, --skip-deploy                      Don't copy changes from the git clone to the target.
     -L, --skip-link                        Don't create a new link in the target directory.
-    -R, --skip-restart-server              Don't restart the web server.
+    -R, --skip-restart-server              Don't restart the PHP server (php5-fpm).
     -T, --skip-push-tag                    Don't create and push a tag in the repository.
     -h, --help                             Show this help text and quit.
 
@@ -156,9 +156,9 @@ if [ $skipLink = false ]; then
 fi
 
 if [ $skipRestartServer = false ]; then
-	echo "Restarting web server..."
-	sudo service apache2 restart
-	echo "Done restarting web server"
+	echo "Restarting PHP FPM..."
+	sudo service php5-fpm restart
+	echo "Done restarting PHP FPM"
 fi
 
 if [ $skipPushTag = false ]; then
