@@ -47,15 +47,17 @@ The script will normally perform the following five steps, each of which may be 
 
 OPTIONS:
     -c, --clone-path=PATH         Path to the local git clone
+                                  (/data/github/providence)
     -p, --target-parent-path=PATH Path containing deployment subdirs
+                                  (/data/cmis/collectiveaccess/providence)
     -t, --tag-name=NAME           Name of the tag, this is used for the local
                                   subdir name and (optionally) to create a tag
-                                  in the repo
+                                  in the repo (defaults to current date)
     -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
-                                  used for tag name only (not local subdir)
+                                  used for tag name only (wamuseum_)
     -s, --symlink-name=NAME       Name of the symlink to create; this should
-                                  match server configuration
-    -r, --restart-service=SERVICE Name of service to restart
+                                  match server configuration (current)
+    -r, --restart-service=SERVICE Name of service to restart (php5-fpm)
     -P, --skip-pull               Don't pull latest changes from upstream
     -D, --skip-deploy             Don't copy changes from clone to target
     -L, --skip-link               Don't create a new link in target directory
