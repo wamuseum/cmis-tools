@@ -7,12 +7,21 @@
 #
 
 # Defaults
-clonePath=/data/github/providence
-targetParentPath=/data/cmis/collectiveaccess/providence
-tagPrefix=wamuseum_
-tagName=$(date +%Y%m%d%H%M%S)
-symlinkName=current
-service=php5-fpm
+defaultClonePath=/data/github/providence
+defaultTargetParentPath=/data/cmis/collectiveaccess/providence
+defaultTagPrefix=wamuseum_
+defaultTagName=$(date +%Y%m%d%H%M%S)
+defaultSymlinkName=current
+defaultService=php5-fpm
+
+# Initial values
+clonePath=$defaultClonePath
+targetParentPath=$defaultTargetParentPath
+tagPrefix=$defaultTagPrefix
+tagName=$defaultTagName
+symlinkName=$defaultSymlinkName
+service=$defaultService
+
 skipPull=false
 skipDeploy=false
 skipLink=false
@@ -120,15 +129,17 @@ USAGE:
 
 OPTIONS:
     -c, --clone-path=PATH         Path to the local git clone
+                                  ($defaultClonePath)
     -p, --target-parent-path=PATH Path containing deployment subdirs
+                                  ($defaultTargetParentPath)
     -t, --tag-name=NAME           Name of the tag, this is used for the local
                                   subdir name and (optionally) to create a tag
-                                  in the repo
+                                  in the repo (defaults to current date)
     -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
-                                  used for tag name only (not local subdir)
+                                  used for tag name only ($defaultTagPrefix)
     -s, --symlink-name=NAME       Name of the symlink to create; this should
-                                  match server configuration
-    -r, --restart-service=SERVICE Name of service to restart
+                                  match server configuration ($defaultSymlinkName)
+    -r, --restart-service=SERVICE Name of service to restart ($defaultService)
     -P, --skip-pull               Don't pull latest changes from upstream
     -D, --skip-deploy             Don't copy changes from clone to target
     -L, --skip-link               Don't create a new link in target directory
