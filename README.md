@@ -80,7 +80,7 @@ The deployment script does not currently handle deployment reversals, these must
   2. `rm [symlink-name]` to remove the existing symbolic link (e.g. with defaults, this is `rm current`).
   3. `ln -s [version] [symlink-name]` with the relevant version to create a new symbolic link to the version you want to run, usually the previous version to the current one (e.g. with defaults and resetting to version 20140423154109, this is `ln -s 20140423154109 current`).
 2. To restart the server:
-  1. `sudo service apache2 restart` to restart Apache, this will ensure that the latest code is active and any previously cached PHP code is refreshed.
+  1. `sudo service php5-fpm restart` to restart FPM, this will ensure that the latest code is active and any previously cached PHP code is refreshed.
 3. To remove the tag:
   1. `cd [clone-path]` to change directory to the path where the repo is cloned (e.g. with defaults, this is `cd /data/github/providence`).
   2. `git tag -d [tag-prefix][tag-name]` to remove the tag from the local repo (e.g. with defaults and removing a version 20140423154109, this is `git tag -d wamuseuem_20140423154109`).
