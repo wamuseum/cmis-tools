@@ -6,6 +6,11 @@
 # initial setup or updates involving a database migration.
 #
 
+#halt on any errors
+set -e
+# halt on undefined variables
+set -u
+
 # Defaults
 defaultClonePath=/data/github/providence
 defaultTargetParentPath=/data/cmis/collectiveaccess/providence
