@@ -6,7 +6,7 @@
 # initial setup or updates involving a database migration.
 #
 
-#halt on any errors
+# halt on any errors
 set -e
 # halt on undefined variables
 set -u
@@ -168,10 +168,7 @@ fi
 
 if [ $skipDeploy = false ]; then
 	echo "Deploying latest changes to staging directory..."
-	if [ -e "$targetSymlinkPath" ]; then
-		cp -R "$targetSymlinkPath/" "$targetPath"
-	fi
-	rsync -a --exclude=".git*" --delete --delete-excluded "$clonePath" "$targetPath"
+	rsync -a --exclude=".git*" "$clonePath" "$targetPath"
 	echo "Done deploying latest changes to staging directory"
 fi
 
@@ -180,7 +177,8 @@ if [ $skipLink = false ]; then
 	if [[ -h $targetSymlinkPath ]]; then  # -h = "exists and is a symbolic link"
 		rm $targetSymlinkPath
 	fi
-	ln -s $targetPath $targetSymlinkPath
+	cp "$targetSymlinkPath/setup.php" "$targetPath/setup.php"
+	ln -s "$targetPath" "$targetSymlinkPath"
 	echo "Done linking production to staging directory"
 fi
 
