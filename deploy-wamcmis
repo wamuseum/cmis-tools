@@ -14,6 +14,7 @@ set -u
 # Defaults
 defaultClonePath=/data/github/providence
 defaultTargetParentPath=/data/cmis/collectiveaccess/providence
+defaultMediaPath=/data/cmis/collectiveaccess/media
 defaultTagPrefix=wamuseum_
 defaultTagName=$(date +%Y%m%d%H%M%S)
 defaultSymlinkName=current
@@ -22,6 +23,7 @@ defaultService=php5-fpm
 # Initial values
 clonePath=$defaultClonePath
 targetParentPath=$defaultTargetParentPath
+mediaPath=$defaultMediaPath
 tagPrefix=$defaultTagPrefix
 tagName=$defaultTagName
 symlinkName=$defaultSymlinkName
@@ -43,6 +45,9 @@ for opt in "$@"; do
 		;;
 		-p=*|--target-parent-path=*)
 			targetParentPath="${opt#*=}"
+		;;
+		-m=*|--media-path=*)
+			mediaPath="${opt#*=}"
 		;;
 		-t=*|--tag-name=*)
 			tagName="${opt#*=}"
@@ -90,6 +95,9 @@ fi
 if [[ "$targetParentPath" = "" ]]; then
 	errors[${#errors[@]}]="Empty target parent path specified"
 fi
+if [[ "$mediaPath" = "" ]]; then
+	errors[${#errors[@]}]="Empty media path specified"
+fi
 if [[ "$tagName" = "" ]]; then
 	errors[${#errors[@]}]="Empty tag name specified, use -T to skip tagging"
 fi
@@ -109,13 +117,16 @@ tagFullName="$tagPrefix$tagName"
 
 # Path checking
 if [ ! -d $clonePath ]; then
-    errors[${#errors[@]}]="Cloned repository path does not exist: $clonePath"
+	errors[${#errors[@]}]="Cloned repository path does not exist: $clonePath"
 fi
 if [ ! -d $targetParentPath ]; then
-    errors[${#errors[@]}]="Target parent path does not exist: $targetParentPath"
+	errors[${#errors[@]}]="Target parent path does not exist: $targetParentPath"
+fi
+if [ ! -d $mediaPath ]; then
+	errors[${#errors[@]}]="Media path does not exist: $mediaPath"
 fi
 if [ -d $targetPath ]; then
-    errors[${#errors[@]}]="Tag directory already exists: $tagName"
+	errors[${#errors[@]}]="Tag directory already exists: $tagName"
 fi
 
 # Show errors and/or usage
@@ -137,6 +148,8 @@ OPTIONS:
                                   ($defaultClonePath)
     -p, --target-parent-path=PATH Path containing deployment subdirs
                                   ($defaultTargetParentPath)
+    -m, --media-path=PATH         Path to the media parent directory
+                                  ($defaultMediaPath)
     -t, --tag-name=NAME           Name of the tag, this is used for the local
                                   subdir name and (optionally) to create a tag
                                   in the repo (defaults to current date)
@@ -178,6 +191,7 @@ if [ $skipLink = false ]; then
 		rm $targetSymlinkPath
 	fi
 	cp "$targetSymlinkPath/setup.php" "$targetPath/setup.php"
+	ln -s "$mediaPath" "$targetPath/media"
 	ln -s "$targetPath" "$targetSymlinkPath"
 	echo "Done linking production to staging directory"
 fi
@@ -199,3 +213,4 @@ fi
 
 # $SECONDS is a magic, per-script variable given by bash
 echo "DEPLOYMENT COMPLETED IN $SECONDS SECONDS"
+
