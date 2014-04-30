@@ -189,7 +189,7 @@ fi
 
 if [ $skipDeploy = false ]; then
 	echo "Deploying latest changes to staging directory..."
-	rsync -a --exclude=".git*" "$clonePath" "$targetPath"
+	rsync -a --exclude=".git*" "$clonePath/" "$targetPath"
 	echo "Done deploying latest changes to staging directory"
 fi
 
@@ -199,7 +199,8 @@ if [ $skipLink = false ]; then
 	if [[ -e "$targetSymlinkPath/$setupFileName" ]]; then
 		cp "$targetSymlinkPath/$setupFileName" "$targetPath"
 	fi
-	# Link to the media directory, which we already know exists
+	# Remove existing media directory, and create link to real media directory, which we already know exists
+	rm -fR "$targetPath/$mediaSymlinkName"
 	ln -s "$mediaPath" "$targetPath/$mediaSymlinkName"
 	# Remove any existing target symlink, and create a new one
 	if [[ -h $targetSymlinkPath ]]; then
