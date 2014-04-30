@@ -6,14 +6,20 @@
 # initial setup or updates involving a database migration.
 #
 
-#halt on any errors
+# Halt on any errors
 set -e
-# halt on undefined variables
+
+# Halt on undefined variables
 set -u
+
+# Constants
+setupFileName=setup.php
+mediaSymlinkName=media
 
 # Defaults
 defaultClonePath=/data/github/providence
 defaultTargetParentPath=/data/cmis/collectiveaccess/providence
+defaultMediaPath=/data/cmis/collectiveaccess/media
 defaultTagPrefix=wamuseum_
 defaultTagName=$(date +%Y%m%d%H%M%S)
 defaultSymlinkName=current
@@ -22,6 +28,7 @@ defaultService=php5-fpm
 # Initial values
 clonePath=$defaultClonePath
 targetParentPath=$defaultTargetParentPath
+mediaPath=$defaultMediaPath
 tagPrefix=$defaultTagPrefix
 tagName=$defaultTagName
 symlinkName=$defaultSymlinkName
@@ -33,8 +40,11 @@ skipLink=false
 skipRestartService=false
 skipPushTag=false
 
-# Parse parameters
+# Array for storing error messages
 declare -a errors
+errors=()
+
+# Parse parameters
 showHelp=false
 for opt in "$@"; do
 	case "$opt" in
@@ -43,6 +53,9 @@ for opt in "$@"; do
 		;;
 		-p=*|--target-parent-path=*)
 			targetParentPath="${opt#*=}"
+		;;
+		-m=*|--media-path=*)
+			mediaPath="${opt#*=}"
 		;;
 		-t=*|--tag-name=*)
 			tagName="${opt#*=}"
@@ -90,6 +103,9 @@ fi
 if [[ "$targetParentPath" = "" ]]; then
 	errors[${#errors[@]}]="Empty target parent path specified"
 fi
+if [[ "$mediaPath" = "" ]]; then
+	errors[${#errors[@]}]="Empty media path specified"
+fi
 if [[ "$tagName" = "" ]]; then
 	errors[${#errors[@]}]="Empty tag name specified, use -T to skip tagging"
 fi
@@ -99,7 +115,7 @@ fi
 if [[ "$service" = "" ]]; then
 	errors[${#errors[@]}]="Empty service name specified, use -R to skip restarting service"
 elif [ ! -e "/etc/init.d/$service" ]; then
-	errors[${#errors[@]}]="Non-existent service name $service specified, use -R to skip restarting service"
+	errors[${#errors[@]}]="Non-existent service name '$service' specified, use -R to skip restarting service"
 fi
 
 # Composite variables
@@ -109,13 +125,16 @@ tagFullName="$tagPrefix$tagName"
 
 # Path checking
 if [ ! -d $clonePath ]; then
-    errors[${#errors[@]}]="Cloned repository path does not exist: $clonePath"
+	errors[${#errors[@]}]="Cloned repository path does not exist: $clonePath"
 fi
 if [ ! -d $targetParentPath ]; then
-    errors[${#errors[@]}]="Target parent path does not exist: $targetParentPath"
+	errors[${#errors[@]}]="Target parent path does not exist: $targetParentPath"
+fi
+if [ ! -d $mediaPath ]; then
+	errors[${#errors[@]}]="Media path does not exist: $mediaPath"
 fi
 if [ -d $targetPath ]; then
-    errors[${#errors[@]}]="Tag directory already exists: $tagName"
+	errors[${#errors[@]}]="Tag directory already exists: $tagName"
 fi
 
 # Show errors and/or usage
@@ -137,6 +156,8 @@ OPTIONS:
                                   ($defaultClonePath)
     -p, --target-parent-path=PATH Path containing deployment subdirs
                                   ($defaultTargetParentPath)
+    -m, --media-path=PATH         Path to the media directory
+                                  ($defaultMediaPath)
     -t, --tag-name=NAME           Name of the tag, this is used for the local
                                   subdir name and (optionally) to create a tag
                                   in the repo (defaults to current date)
@@ -168,19 +189,24 @@ fi
 
 if [ $skipDeploy = false ]; then
 	echo "Deploying latest changes to staging directory..."
-	if [ -e "$targetSymlinkPath" ]; then
-		cp -R "$targetSymlinkPath/" "$targetPath"
-	fi
-	rsync -a --exclude=".git*" --delete --delete-excluded "$clonePath" "$targetPath"
+	rsync -a --exclude=".git*" "$clonePath/" "$targetPath"
 	echo "Done deploying latest changes to staging directory"
 fi
 
 if [ $skipLink = false ]; then
 	echo "Linking production to staging directory..."
-	if [[ -h $targetSymlinkPath ]]; then  # -h = "exists and is a symbolic link"
+	# Link to the setup.php file, skipped if it doesn't exist
+	if [[ -e "$targetSymlinkPath/$setupFileName" ]]; then
+		cp "$targetSymlinkPath/$setupFileName" "$targetPath"
+	fi
+	# Remove existing media directory, and create link to real media directory, which we already know exists
+	rm -fR "$targetPath/$mediaSymlinkName"
+	ln -s "$mediaPath" "$targetPath/$mediaSymlinkName"
+	# Remove any existing target symlink, and create a new one
+	if [[ -h $targetSymlinkPath ]]; then
 		rm $targetSymlinkPath
 	fi
-	ln -s $targetPath $targetSymlinkPath
+	ln -s "$targetPath" "$targetSymlinkPath"
 	echo "Done linking production to staging directory"
 fi
 
@@ -201,3 +227,4 @@ fi
 
 # $SECONDS is a magic, per-script variable given by bash
 echo "DEPLOYMENT COMPLETED IN $SECONDS SECONDS"
+
