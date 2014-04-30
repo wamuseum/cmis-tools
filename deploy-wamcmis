@@ -6,9 +6,10 @@
 # initial setup or updates involving a database migration.
 #
 
-# halt on any errors
+# Halt on any errors
 set -e
-# halt on undefined variables
+
+# Halt on undefined variables
 set -u
 
 # Defaults
