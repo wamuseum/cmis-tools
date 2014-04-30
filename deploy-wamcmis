@@ -12,6 +12,10 @@ set -e
 # Halt on undefined variables
 set -u
 
+# Constants
+setupFileName=setup.php
+mediaSymlinkName=media
+
 # Defaults
 defaultClonePath=/data/github/providence
 defaultTargetParentPath=/data/cmis/collectiveaccess/providence
@@ -36,8 +40,11 @@ skipLink=false
 skipRestartService=false
 skipPushTag=false
 
-# Parse parameters
+# Array for storing error messages
 declare -a errors
+errors=()
+
+# Parse parameters
 showHelp=false
 for opt in "$@"; do
 	case "$opt" in
@@ -108,7 +115,7 @@ fi
 if [[ "$service" = "" ]]; then
 	errors[${#errors[@]}]="Empty service name specified, use -R to skip restarting service"
 elif [ ! -e "/etc/init.d/$service" ]; then
-	errors[${#errors[@]}]="Non-existent service name $service specified, use -R to skip restarting service"
+	errors[${#errors[@]}]="Non-existent service name '$service' specified, use -R to skip restarting service"
 fi
 
 # Composite variables
@@ -149,7 +156,7 @@ OPTIONS:
                                   ($defaultClonePath)
     -p, --target-parent-path=PATH Path containing deployment subdirs
                                   ($defaultTargetParentPath)
-    -m, --media-path=PATH         Path to the media parent directory
+    -m, --media-path=PATH         Path to the media directory
                                   ($defaultMediaPath)
     -t, --tag-name=NAME           Name of the tag, this is used for the local
                                   subdir name and (optionally) to create a tag
@@ -188,11 +195,16 @@ fi
 
 if [ $skipLink = false ]; then
 	echo "Linking production to staging directory..."
-	if [[ -h $targetSymlinkPath ]]; then  # -h = "exists and is a symbolic link"
+	# Link to the setup.php file, skipped if it doesn't exist
+	if [[ -e "$targetSymlinkPath/$setupFileName" ]]; then
+		cp "$targetSymlinkPath/$setupFileName" "$targetPath"
+	fi
+	# Link to the media directory, which we already know exists
+	ln -s "$mediaPath" "$targetPath/$mediaSymlinkName"
+	# Remove any existing target symlink, and create a new one
+	if [[ -h $targetSymlinkPath ]]; then
 		rm $targetSymlinkPath
 	fi
-	cp "$targetSymlinkPath/setup.php" "$targetPath/setup.php"
-	ln -s "$mediaPath" "$targetPath/media"
 	ln -s "$targetPath" "$targetSymlinkPath"
 	echo "Done linking production to staging directory"
 fi
