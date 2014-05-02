@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# WAM CMIS (providence) installation profile export script
+#
+# This script exports the current installation profile from a CollectiveAccess installation and then strips the large taxonomy out of it.
+#
+echo "$0: installation profile exporter"
+
+# Halt on any errors
+set -e
+
+# Halt on undefined variables
+set -u
+
+
+# Constants
+profileFileName="wamcmis.xml"
+profileName='WA Museum CMIS'
+
+profileUrl='http://wamwpcmis.da.wa.gov.au'
+profileDescription='Western Australian Museum Collection Managment Information System'
+xslt="`dirname $0`/stripTaxonomy.xslt"
+
+#make sure we have a CA installation available
+checkCollectiveAccess
+
+#compoundVariables
+
+installProfilesPath="$COLLECTIVEACCESS_HOME/install/profiles/xml"
+currentProfilePath="$installProfilesPath/$profileFileName"
+
+
+#make sure xsltproc is installed in order to process the profile and remove unwanted elements
+
+if ! `which xsltproc > /dev/null` ; then
+	echo -e "You sould have xsltproc installed. You can install it using\n\tsudo apt-get install xsltproc"
+	exit 1
+fi
+
+echo -e "\txsltproc installed at `which xsltproc`"
+echo "Now exporting profile"
+
+#export the profile
+caUtils export-profile -u "$profileUrl" -d "$profileDescription" -n "$profileName" -o "$currentProfilePath"
+xsltproc "$xslt" "$currentProfilePath" > "$currentProfilePath.new"
+mv "$currentProfilePath.new" "$currentProfilePath"

@@ -98,3 +98,12 @@ checkCollectiveAccess
 ## switchdb
 
 This is a development tool which automates switching in of a relevant setup file, which allows use of different databases and configurations.
+
+## exportCaProfile
+
+This script exports an installation profile from a CollectiveAccess installation and then removes the superfluous taxonomy terms as these are loaded with the records via import scripts. It is configured to replace the `wamcmis.xml` file stored at `install/profiles/xml/` in `$COLLECTIVEACCESS_HOME`.
+
+_usage_:
+```
+exportCaProfile
+```
