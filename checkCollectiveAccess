@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# A script which checks for a CollectiveAccess installation path and exits with code 1
+#
+
+# We don't use set -e as the which command below kills the script if caUtils is not on the path
+# Halt on undefined variables
+set -u
+
+if ! which caUtils > /dev/null; then
+    echo "You need to have caUtils from the CollectiveAccess installation directory on your PATH"
+    echo "  it should be a file at ./support/bin/caUtils relative to your providence installation"
+    exit 1
+fi
+echo -e "\tcaUtils found at:\t\t`which caUtils`"
+if [ ! -d $COLLECTIVEACCESS_HOME ]; then
+    echo "You should have the COLLECTIVEACCESS_HOME environment variable defined"
+    exit 1
+fi
+echo -e "\tCOLLECTIVEACCESS_HOME set to:\t$COLLECTIVEACCESS_HOME"
+
