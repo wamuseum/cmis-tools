@@ -91,7 +91,6 @@ The deployment script does not currently handle deployment reversals, these must
 A utility script to check for the existance of a CollectiveAccess installation and the definition of the `$COLLECTIVEACCESS_HOME` environment variable. Other scripts can use it for checks.
 
 _usage_:
-
 ```
 checkCollectiveAccess
 ```
