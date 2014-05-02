@@ -86,6 +86,16 @@ The deployment script does not currently handle deployment reversals, these must
   2. `git tag -d [tag-prefix][tag-name]` to remove the tag from the local repo (e.g. with defaults and removing a version 20140423154109, this is `git tag -d wamuseuem_20140423154109`).
   3. `git push origin :refs/tags/[tag-prefix][tag-name]` to push the removal of the tag to the remote repo (e.g. with defaults and removing a version 20140423154109, this is `git push origin :refs/tags/wamuseum_20140423154109`).
 
+## checkCollectiveAccess
+
+A utility script to check for the existance of a CollectiveAccess installation and the definition of the `$COLLECTIVEACCESS_HOME` environment variable. Other scripts can use it for checks.
+
+_usage_:
+
+```
+checkCollectiveAccess
+```
+
 ## switchdb
 
 This is a development tool which automates switching in of a relevant setup file, which allows use of different databases and configurations.
