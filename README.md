@@ -45,25 +45,25 @@ The script will normally perform the following five steps, each of which may be 
     USAGE:
         deploy-wamcmis [OPTIONS]
 
-OPTIONS:
-    -c, --clone-path=PATH         Path to the local git clone
-                                  (/data/github/providence)
-    -p, --target-parent-path=PATH Path containing deployment subdirs
-                                  (/data/cmis/collectiveaccess/providence)
-    -t, --tag-name=NAME           Name of the tag, this is used for the local
-                                  subdir name and (optionally) to create a tag
-                                  in the repo (defaults to current date)
-    -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
-                                  used for tag name only (wamuseum_)
-    -s, --symlink-name=NAME       Name of the symlink to create; this should
-                                  match server configuration (current)
-    -r, --restart-service=SERVICE Name of service to restart (php5-fpm)
-    -P, --skip-pull               Don't pull latest changes from upstream
-    -D, --skip-deploy             Don't copy changes from clone to target
-    -L, --skip-link               Don't create a new link in target directory
-    -R, --skip-restart-server     Don't restart any service
-    -T, --skip-push-tag           Don't create and push a tag
-    -h, --help                    Show this help text and quit
+    OPTIONS:
+        -c, --clone-path=PATH         Path to the local git clone
+                                      (/data/github/providence)
+        -p, --target-parent-path=PATH Path containing deployment subdirs
+                                      (/data/cmis/collectiveaccess/providence)
+        -t, --tag-name=NAME           Name of the tag, this is used for the local
+                                      subdir name and (optionally) to create a tag
+                                      in the repo (defaults to current date)
+        -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
+                                      used for tag name only (wamuseum_)
+        -s, --symlink-name=NAME       Name of the symlink to create; this should
+                                      match server configuration (current)
+        -r, --restart-service=SERVICE Name of service to restart (php5-fpm)
+        -P, --skip-pull               Don't pull latest changes from upstream
+        -D, --skip-deploy             Don't copy changes from clone to target
+        -L, --skip-link               Don't create a new link in target directory
+        -R, --skip-restart-server     Don't restart any service
+        -T, --skip-push-tag           Don't create and push a tag
+        -h, --help                    Show this help text and quit
 
 Notes:
 
