@@ -14,7 +14,8 @@ set -u
 
 
 # Constants
-profileName='wamcmis'
+profileFileName="wamcmis.xml"
+profileName='WA Museum CMIS'
 
 profileUrl='http://wamwpcmis.da.wa.gov.au'
 profileDescription='Western Australian Museum Collection Managment Information System'
@@ -26,7 +27,7 @@ checkCollectiveAccess
 #compoundVariables
 
 installProfilesPath="$COLLECTIVEACCESS_HOME/install/profiles/xml"
-currentProfilePath="$installProfilesPath/$profileName.xml"
+currentProfilePath="$installProfilesPath/$profileFileName"
 
 
 #make sure xsltproc is installed in order to process the profile and remove unwanted elements
