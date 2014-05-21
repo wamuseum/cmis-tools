@@ -5,7 +5,7 @@ set -u
 set -e
 
 # Number of backups to keep
-backupsToKeep=8
+backupsToKeep=30
 
 # Root path for all backups
 rootPath=/data/cmis/backups/profile
