@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# WAM CMIS (providence) database export script
+#
+# This script exports the current database from a CollectiveAccess installation.
+#
+echo "$0: database exporter"
+
+# Halt on any errors
+set -e
+
+# Halt on undefined variables
+set -u
+
+# Make sure we have a CA installation available
+`dirname $0`/check-environment
+
+# Constants
+databaseName=collectiveaccess
+dumpFileName=collectiveaccess.sql
+
+# Determine the export path
+if [ $# -gt 0 ]; then
+	dumpPath="$1/$dumpFileName"
+else
+	dumpPath="`pwd`/$dumpFileName"
+fi
+
+# Export the database
+echo "Now exporting database"
+mysqldump $databaseName > $dumpPath
+
