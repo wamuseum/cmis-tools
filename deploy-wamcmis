@@ -181,8 +181,8 @@ fi
 if [ $skipPull = false ]; then
 	echo "Pulling latest changes from remote git repository..."
 	pushd "$clonePath" >/dev/null
-	git checkout master
-	git pull origin master
+	git checkout develop
+	git pull origin develop
 	popd >/dev/null
 	echo "Done pulling latest changes from remote git repository"
 fi
