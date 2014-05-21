@@ -12,15 +12,22 @@ set -e
 # Halt on undefined variables
 set -u
 
+# Make sure we have a CA installation available
+`dirname $0`/check-environment
+
+# Make sure xsltproc is installed in order to process the profile and remove unwanted elements
+if ! `which xsltproc > /dev/null` ; then
+	echo -e "You sould have xsltproc installed. You can install it using\n\tsudo apt-get install xsltproc"
+	exit 1
+fi
+echo -e "\txsltproc installed at `which xsltproc`"
+
 # Constants
 profileFileName="wamcmis.xml"
 profileName='Western Australian Museum CMIS'
 profileUrl='http://wamwpcmis.da.wa.gov.au'
 profileDescription='Western Australian Museum Collection Managment Information System'
-xslt="`dirname $0`/stripTaxonomy.xslt"
-
-# Make sure we have a CA installation available
-`dirname $0`/checkCollectiveAccess
+xslt="`dirname $0`/../xslt/strip-taxonomy.xslt"
 
 # Determine the export path
 if [ $# -gt 0 ]; then
@@ -29,15 +36,8 @@ else
 	currentProfilePath="$COLLECTIVEACCESS_HOME/install/profiles/xml/$profileFileName"
 fi
 
-# Make sure xsltproc is installed in order to process the profile and remove unwanted elements
-if ! `which xsltproc > /dev/null` ; then
-	echo -e "You sould have xsltproc installed. You can install it using\n\tsudo apt-get install xsltproc"
-	exit 1
-fi
-echo -e "\txsltproc installed at `which xsltproc`"
-echo "Now exporting profile"
-
 # Export the profile
+echo "Now exporting profile"
 caUtils export-profile -u "$profileUrl" -d "$profileDescription" -n "$profileName" -o "$currentProfilePath.export"
 xsltproc "$xslt" "$currentProfilePath.export" > "$currentProfilePath.stripped"
 mv "$currentProfilePath.stripped" "$currentProfilePath"

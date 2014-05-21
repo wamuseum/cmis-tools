@@ -17,7 +17,7 @@ exportPath=$rootPath/`date +%Y%m%d%H%M%S`
 mkdir -p $exportPath
 
 # Run the export
-`dirname $0`/exportCaProfile $exportPath
+`dirname $0`/export-profile $exportPath
 
 # Delete old files, keep the last 8
 # See user `bmk` answer here: http://superuser.com/questions/260312/bash-script-to-keep-last-x-number-of-files-and-delete-the-rest
