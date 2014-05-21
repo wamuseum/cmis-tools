@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Break on undefined variables and errors
+set -u
+set -e
+
 # Number of backups to keep
 backupsToKeep=8
 
