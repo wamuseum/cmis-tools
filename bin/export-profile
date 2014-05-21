@@ -2,7 +2,7 @@
 #
 # WAM CMIS (providence) installation profile export script
 #
-# This script exports the current installation profile from a CollectiveAccess installation and then strips the large taxonomy out of it.
+# This script exports the installation profile from a CollectiveAccess installation and then strips the large taxonomy out of it.
 #
 echo "$0: installation profile exporter"
 
@@ -31,15 +31,15 @@ xslt="`dirname $0`/../xslt/strip-taxonomy.xslt"
 
 # Determine the export path
 if [ $# -gt 0 ]; then
-	currentProfilePath="$1/$profileFileName"
+	profilePath="$1/$profileFileName"
 else
-	currentProfilePath="$COLLECTIVEACCESS_HOME/install/profiles/xml/$profileFileName"
+	profilePath="$COLLECTIVEACCESS_HOME/install/profiles/xml/$profileFileName"
 fi
 
 # Export the profile
 echo "Now exporting profile"
-caUtils export-profile -u "$profileUrl" -d "$profileDescription" -n "$profileName" -o "$currentProfilePath.export"
-xsltproc "$xslt" "$currentProfilePath.export" > "$currentProfilePath.stripped"
-mv "$currentProfilePath.stripped" "$currentProfilePath"
-rm "$currentProfilePath.export"
+caUtils export-profile -u "$profileUrl" -d "$profileDescription" -n "$profileName" -o "$profilePath.export"
+xsltproc "$xslt" "$profilePath.export" > "$profilePath.stripped"
+mv "$profilePath.stripped" "$profilePath"
+rm "$profilePath.export"
 
