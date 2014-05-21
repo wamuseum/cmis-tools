@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Break on undefined variables and errors
+set -u
+set -e
+
+# Number of backups to keep
+backupsToKeep=30
+
+# Root path for all backups
+rootPath=/data/cmis/backups/profile
+
+# Set the export path including timestamp
+exportPath=$rootPath/`date +%Y%m%d%H%M%S`
+
+# Ensure the export path exists
+mkdir -p $exportPath
+
+# Run the export
+`dirname $0`/exportCaProfile $exportPath
+
+# Delete old files, keep the last 8
+# See user `bmk` answer here: http://superuser.com/questions/260312/bash-script-to-keep-last-x-number-of-files-and-delete-the-rest
+pushd $rootPath >/dev/null
+ls -r1 | tail -n +$(($backupsToKeep+1)) | xargs rm -fR
+popd >/dev/null
+
