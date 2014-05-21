@@ -17,7 +17,7 @@ set -u
 
 # Constants
 databaseName=collectiveaccess
-dumpFileName=collectiveaccess.sql
+dumpFileName=collectiveaccess.sql.gz
 
 # Determine the export path
 if [ $# -gt 0 ]; then
@@ -28,5 +28,5 @@ fi
 
 # Export the database
 echo "Now exporting database"
-mysqldump $databaseName > $dumpPath
+mysqldump $databaseName | gzip > $dumpPath
 
