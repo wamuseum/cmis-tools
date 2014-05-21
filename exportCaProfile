@@ -12,11 +12,9 @@ set -e
 # Halt on undefined variables
 set -u
 
-
 # Constants
 profileFileName="wamcmis.xml"
 profileName='Western Australian Museum CMIS'
-
 profileUrl='http://wamwpcmis.da.wa.gov.au'
 profileDescription='Western Australian Museum Collection Managment Information System'
 xslt="`dirname $0`/stripTaxonomy.xslt"
