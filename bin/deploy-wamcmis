@@ -16,31 +16,36 @@ set -u
 setupFileName=setup.php
 mediaSymlinkName=media
 
+# Get mode argument
+mode=all
+if [[ $# > 0 && ${1::1} != "-" ]]; then
+	mode=$1
+	shift
+fi
+
+# The "all" calls both other modes, and passes all options to both modes
+if [[ "$mode" = "all" ]]; then
+	$0 providence $@ && $0 cmis-local-conf $@
+	exit $?
+fi
+
 # Defaults
-defaultClonePath=/data/github/providence
-defaultTargetParentPath=/data/cmis/collectiveaccess/providence
-defaultMediaPath=/data/cmis/collectiveaccess/media
-defaultBranch=develop
-defaultTagPrefix=wamuseum_
-defaultTagName=$(date +%Y%m%d%H%M%S)
-defaultSymlinkName=current
-defaultService=php5-fpm
+source $(dirname $0)/../conf/deploy-wamcmis/$mode.conf
 
 # Initial values
-clonePath=$defaultClonePath
-targetParentPath=$defaultTargetParentPath
-mediaPath=$defaultMediaPath
+repoPath=$defaultRepoPath
 branch=$defaultBranch
+deployPath=$defaultDeployPath
+mediaPath=$defaultMediaPath
 tagPrefix=$defaultTagPrefix
 tagName=$defaultTagName
 symlinkName=$defaultSymlinkName
 service=$defaultService
-
-skipPull=false
-skipDeploy=false
-skipLink=false
-skipRestartService=false
-skipPushTag=false
+skipRepoUpdate=$defaultSkipRepoUpdate
+skipDeploy=$defaultSkipDeploy
+skipMediaLink=$defaultSkipMediaLink
+skipTag=$defaultSkipTag
+skipRestartService=$defaultSkipRestartService
 
 # Array for storing error messages
 declare -a errors
@@ -50,17 +55,17 @@ errors=()
 showHelp=false
 for opt in "$@"; do
 	case "$opt" in
-		-c=*|--clone-path=*)
-			clonePath="${opt#*=}"
-		;;
-		-p=*|--target-parent-path=*)
-			targetParentPath="${opt#*=}"
-		;;
-		-m=*|--media-path=*)
-			mediaPath="${opt#*=}"
+		-r=*|--repo-path=*)
+			repoPath="${opt#*=}"
 		;;
 		-b=*|--branch=*)
 			branch="${opt#*=}"
+		;;
+		-d=*|--deploy-path=*)
+			deployPath="${opt#*=}"
+		;;
+		-m=*|--media-path=*)
+			mediaPath="${opt#*=}"
 		;;
 		-t=*|--tag-name=*)
 			tagName="${opt#*=}"
@@ -68,26 +73,26 @@ for opt in "$@"; do
 		-x=*|--tag-prefix=*)
 			tagPrefix="${opt#*=}"
 		;;
-		-s=*|--symlink-name=*)
+		-l=*|--symlink-name=*)
 			symlinkName="${opt#*=}"
 		;;
-		-r=*|--restart-service=*)
+		-s=*|--restart-service=*)
 			service="${opt#*=}"
 		;;
-		-P|--skip-pull)
-			skipPull=true
+		-R|--skip-repo-update)
+			skipRepoUpdate=true
 		;;
 		-D|--skip-deploy)
 			skipDeploy=true
 		;;
-		-L|--skip-link)
-			skipLink=true
+		-M|--skip-media-link)
+			skipMediaLink=true
 		;;
-		-R|--skip-restart-service)
+		-T|--skip-tag)
+			skipTag=true
+		;;
+		-S|--skip-restart-service)
 			skipRestartService=true
-		;;
-		-T|--skip-push-tag)
-			skipPushTag=true
 		;;
 		-h|--help)
 			showHelp=true
@@ -102,25 +107,25 @@ for opt in "$@"; do
 done
 
 # Sanity check options
-if [[ "$clonePath" = "" ]]; then
-	errors[${#errors[@]}]="Empty clone path specified"
-fi
-if [[ "$targetParentPath" = "" ]]; then
-	errors[${#errors[@]}]="Empty target parent path specified"
-fi
-if [[ "$mediaPath" = "" ]]; then
-	errors[${#errors[@]}]="Empty media path specified"
+if [[ "$repoPath" = "" ]]; then
+	errors[${#errors[@]}]="Empty repo path specified"
 fi
 if [[ "$branch" = "" ]]; then
 	errors[${#errors[@]}]="Empty branch name specified"
 fi
-if [[ ! $skipPushTag && "$tagName" = "" ]]; then
+if [[ "$deployPath" = "" ]]; then
+	errors[${#errors[@]}]="Empty deploy path specified"
+fi
+if [[ "$skipMediaLink" != true && "$mediaPath" = "" ]]; then
+	errors[${#errors[@]}]="Empty media path specified, use -M to skip linking to an external media location"
+fi
+if [[ "$skipTag" != true && "$tagName" = "" ]]; then
 	errors[${#errors[@]}]="Empty tag name specified, use -T to skip tagging"
 fi
-if [[ ! $skipLink && "$symlinkName" = "" ]]; then
-	errors[${#errors[@]}]="Empty symlink name specified, use -L to skip linking"
+if [[ "$symlinkName" = "" ]]; then
+	errors[${#errors[@]}]="Empty symlink name specified, this should match external configuration"
 fi
-if [[ ! $skipRestartService ]]; then
+if [[ "$skipRestartService" != true ]]; then
 	if [[ "$service" = "" ]]; then
 		errors[${#errors[@]}]="Empty service name specified, use -R to skip restarting service"
 	elif [ ! -e "/etc/init.d/$service" ]; then
@@ -129,22 +134,22 @@ if [[ ! $skipRestartService ]]; then
 fi
 
 # Composite variables
-targetPath="$targetParentPath/$tagName"
-targetSymlinkPath="$targetParentPath/$symlinkName"
+deployStagePath="$deployPath/$tagName"
+deploySymlinkPath="$deployPath/$symlinkName"
 tagFullName="$tagPrefix$tagName"
 
 # Path checking
-if [ ! -d $clonePath ]; then
-	errors[${#errors[@]}]="Cloned repository path does not exist: $clonePath"
+if [[ ! -d $repoPath ]]; then
+	errors[${#errors[@]}]="Repository path does not exist: $repoPath"
 fi
-if [ ! -d $targetParentPath ]; then
-	errors[${#errors[@]}]="Target parent path does not exist: $targetParentPath"
+if [[ ! -d $deployPath ]]; then
+	errors[${#errors[@]}]="Deploy path does not exist: $deployPath"
 fi
-if [ ! -d $mediaPath ]; then
+if [[ "$skipMediaLink" != true && ! -d $mediaPath ]]; then
 	errors[${#errors[@]}]="Media path does not exist: $mediaPath"
 fi
-if [ -d $targetPath ]; then
-	errors[${#errors[@]}]="Tag directory already exists: $tagName"
+if [[ -d $deployStagePath ]]; then
+	errors[${#errors[@]}]="Stage path already exists: $deployStagePath"
 fi
 
 # Show errors and/or usage
@@ -159,84 +164,112 @@ if [[ ${#errors[@]} > 0 || $showHelp = true ]]; then
 
 	cat << ENDHELP
 USAGE:
-    ${0##*/} [OPTIONS]
+    ${0##*/} [MODE] [OPTIONS]
+
+MODE:
+	The mode sets the defaults for all of the options:
+
+	providence         Deploy the software code for providence
+	cmis-local-conf    Deploy the local configuration
+	all                Deploy both providence and local configuration
+
+	The "all" mode, which is the default, is a synonym for running the
+	"providence" mode followed if successful by the "cmis-local-conf" mode.
 
 OPTIONS:
-    -c, --clone-path=PATH         Path to the local git clone
-                                  ($defaultClonePath)
-    -p, --target-parent-path=PATH Path containing deployment subdirs
-                                  ($defaultTargetParentPath)
+    Defaults shown here in (parentheses) are for the current mode ($mode):
+
+    -r, --repo-path=PATH          Path to the local git repository
+                                  ($defaultRepoPath)
+    -b, --branch=BRANCH           Branch to check out before retrieving updates
+                                  ($defaultBranch)
+    -d, --deploy-path=PATH        Path containing deployment directories
+                                  ($defaultDeployPath)
     -m, --media-path=PATH         Path to the media directory
                                   ($defaultMediaPath)
-    -b, --branch=BRANCH           Branch to check out before retrieving updates
-                                  from remote repository ($defaultBranch)
     -t, --tag-name=NAME           Name of the tag, this is used for the local
                                   subdir name and (optionally) to create a tag
                                   in the repo (defaults to current date)
     -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
                                   used for tag name only ($defaultTagPrefix)
-    -s, --symlink-name=NAME       Name of the symlink to create; this should
-                                  match server configuration ($defaultSymlinkName)
-    -r, --restart-service=SERVICE Name of service to restart ($defaultService)
-    -P, --skip-pull               Don't pull latest changes from upstream
-    -D, --skip-deploy             Don't copy changes from clone to target
-    -L, --skip-link               Don't create a new link in target directory
-    -R, --skip-restart-server     Don't restart any service
-    -T, --skip-push-tag           Don't create and push a tag
+    -l, --symlink-name=NAME       Name of the symlink to create; this should
+                                  match external configuration ($defaultSymlinkName)
+    -s, --restart-service=SERVICE Name of service to restart ($defaultService)
+    -R, --skip-repo-update        Don't pull latest changes from upstream
+                                  repository ($defaultSkipRepoUpdate)
+    -D, --skip-deploy             Don't deploy changes into "live" directories
+                                  ($defaultSkipDeploy)
+    -M, --skip-media-link         Don't create a link to external media path,
+                                  use new directory under deployment path ($defaultSkipMediaLink)
+    -T, --skip-tag                Don't create and push a tag ($defaultSkipTag)
+    -S, --skip-restart-server     Don't restart any service ($defaultSkipRestartService)
     -h, --help                    Show this help text and quit
 
 ENDHELP
-	exit
+	exit 1
 fi
 
-# Process steps...
-if [ $skipPull = false ]; then
-	echo "Pulling latest changes from remote git repository..."
-	pushd "$clonePath" >/dev/null
+echo "******** DEPLOYING $mode ********" | tr '[:lower:]' '[:upper:]'
+
+# Pull changes from remote repository
+if [[ "$skipRepoUpdate" != true ]]; then
+	echo "Pulling latest changes from branch '$branch' into repository '$repoPath'..."
+
+	pushd "$repoPath" >/dev/null
 	git checkout $branch
 	git pull origin $branch
 	popd >/dev/null
-	echo "Done pulling latest changes from remote git repository"
+
+	echo "Done pulling latest changes"
 fi
 
-if [ $skipDeploy = false ]; then
-	echo "Deploying latest changes to staging directory..."
-	rsync -a --exclude=".git*" "$clonePath/" "$targetPath"
-	echo "Done deploying latest changes to staging directory"
-fi
+# Deploy to live directory
+if [[ "$skipDeploy" != true ]]; then
+	echo "Deploying latest changes to '$deployStagePath'..."
 
-if [ $skipLink = false ]; then
-	echo "Linking production to staging directory..."
-	# Link to the setup.php file, skipped if it doesn't exist
-	if [[ -e "$targetSymlinkPath/$setupFileName" ]]; then
-		cp "$targetSymlinkPath/$setupFileName" "$targetPath"
+	rsync -a --exclude=".git*" "$repoPath/" "$deployStagePath"
+	if [[ -e "$deploySymlinkPath/$setupFileName" ]]; then
+		echo "Copying current $setupFileName into stage path"
+		cp "$deploySymlinkPath/$setupFileName" "$deployStagePath"
 	fi
-	# Remove existing media directory, and create link to real media directory, which we already know exists
-	rm -fR "$targetPath/$mediaSymlinkName"
-	ln -s "$mediaPath" "$targetPath/$mediaSymlinkName"
-	# Remove any existing target symlink, and create a new one
-	if [[ -h $targetSymlinkPath ]]; then
-		rm $targetSymlinkPath
+	if [[ -h $deploySymlinkPath ]]; then
+		echo "Removing old symlink"
+		rm $deploySymlinkPath
 	fi
-	ln -s "$targetPath" "$targetSymlinkPath"
-	echo "Done linking production to staging directory"
+	ln -s "$deployStagePath" "$deploySymlinkPath"
+
+	echo "Done deploying latest changes..."
 fi
 
-if [ $skipRestartService = false ]; then
-	echo "Restarting service $service..."
+# Setup external media directory
+if [[ "$skipMediaLink" != true ]]; then
+	echo "Linking to external media path '$mediaPath'..."
+
+	rm -fR "$deployStagePath/$mediaSymlinkName"
+	ln -s "$mediaPath" "$deployStagePath/$mediaSymlinkName"
+
+	echo "Done linking to external media path..."
+fi
+
+# Restart service
+if [[ $skipRestartService != true ]]; then
+	echo "Restarting service '$service'..."
+
 	sudo service $service restart
+
 	echo "Done restarting service $service"
 fi
 
-if [ $skipPushTag = false ]; then
-	echo "Adding a tag for the deployed version..."
-	pushd "$clonePath" >/dev/null
+# Tag and push to remote repository
+if [[ $skipTag != true ]]; then
+	echo "Adding tag '$tagFullName' for the deployed version..."
+
+	pushd "$repoPath" >/dev/null
 	git tag -a "$tagFullName" -m "Tagging $tagFullName [from deployment script, deploy-wamcmis]"
 	git push origin "$tagFullName"
 	popd >/dev/null
-	echo "Done adding a tag for the deployed version"
+
+	echo "Done adding tag for the deployed version"
 fi
 
-# $SECONDS is a magic, per-script variable given by bash
-echo "DEPLOYMENT COMPLETED IN $SECONDS SECONDS"
-
+echo "******** $mode DEPLOYMENT COMPLETED IN $SECONDS SECONDS ********" | tr '[:lower:]' '[:upper:]'
