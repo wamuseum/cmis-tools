@@ -20,6 +20,7 @@ mediaSymlinkName=media
 defaultClonePath=/data/github/providence
 defaultTargetParentPath=/data/cmis/collectiveaccess/providence
 defaultMediaPath=/data/cmis/collectiveaccess/media
+defaultBranch=develop
 defaultTagPrefix=wamuseum_
 defaultTagName=$(date +%Y%m%d%H%M%S)
 defaultSymlinkName=current
@@ -29,6 +30,7 @@ defaultService=php5-fpm
 clonePath=$defaultClonePath
 targetParentPath=$defaultTargetParentPath
 mediaPath=$defaultMediaPath
+branch=$defaultBranch
 tagPrefix=$defaultTagPrefix
 tagName=$defaultTagName
 symlinkName=$defaultSymlinkName
@@ -56,6 +58,9 @@ for opt in "$@"; do
 		;;
 		-m=*|--media-path=*)
 			mediaPath="${opt#*=}"
+		;;
+		-b=*|--branch=*)
+			branch="${opt#*=}"
 		;;
 		-t=*|--tag-name=*)
 			tagName="${opt#*=}"
@@ -106,16 +111,21 @@ fi
 if [[ "$mediaPath" = "" ]]; then
 	errors[${#errors[@]}]="Empty media path specified"
 fi
-if [[ "$tagName" = "" ]]; then
+if [[ "$branch" = "" ]]; then
+	errors[${#errors[@]}]="Empty branch name specified"
+fi
+if [[ ! $skipPushTag && "$tagName" = "" ]]; then
 	errors[${#errors[@]}]="Empty tag name specified, use -T to skip tagging"
 fi
-if [[ "$symlinkName" = "" ]]; then
+if [[ ! $skipLink && "$symlinkName" = "" ]]; then
 	errors[${#errors[@]}]="Empty symlink name specified, use -L to skip linking"
 fi
-if [[ "$service" = "" ]]; then
-	errors[${#errors[@]}]="Empty service name specified, use -R to skip restarting service"
-elif [ ! -e "/etc/init.d/$service" ]; then
-	errors[${#errors[@]}]="Non-existent service name '$service' specified, use -R to skip restarting service"
+if [[ ! $skipRestartService ]]; then
+	if [[ "$service" = "" ]]; then
+		errors[${#errors[@]}]="Empty service name specified, use -R to skip restarting service"
+	elif [ ! -e "/etc/init.d/$service" ]; then
+		errors[${#errors[@]}]="Non-existent service name '$service' specified, use -R to skip restarting service"
+	fi
 fi
 
 # Composite variables
@@ -158,6 +168,8 @@ OPTIONS:
                                   ($defaultTargetParentPath)
     -m, --media-path=PATH         Path to the media directory
                                   ($defaultMediaPath)
+    -b, --branch=BRANCH           Branch to check out before retrieving updates
+                                  from remote repository ($defaultBranch)
     -t, --tag-name=NAME           Name of the tag, this is used for the local
                                   subdir name and (optionally) to create a tag
                                   in the repo (defaults to current date)
@@ -181,8 +193,8 @@ fi
 if [ $skipPull = false ]; then
 	echo "Pulling latest changes from remote git repository..."
 	pushd "$clonePath" >/dev/null
-	git checkout develop
-	git pull origin develop
+	git checkout $branch
+	git pull origin $branch
 	popd >/dev/null
 	echo "Done pulling latest changes from remote git repository"
 fi
