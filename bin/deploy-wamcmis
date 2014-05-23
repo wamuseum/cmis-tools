@@ -35,6 +35,7 @@ source $configPath/$mode.conf
 
 # Initial values
 repoPath=$defaultRepoPath
+remote=$defaultRemote
 branch=$defaultBranch
 deployPath=$defaultDeployPath
 mediaPath=$defaultMediaPath
@@ -56,8 +57,11 @@ errors=()
 showHelp=false
 for opt in "$@"; do
 	case "$opt" in
-		-r=*|--repo-path=*)
+		-p=*|--repo-path=*)
 			repoPath="${opt#*=}"
+		;;
+		-r=*|--remote=*)
+			remote="${opt#*=}"
 		;;
 		-b=*|--branch=*)
 			branch="${opt#*=}"
@@ -80,7 +84,7 @@ for opt in "$@"; do
 		-s=*|--restart-service=*)
 			service="${opt#*=}"
 		;;
-		-R|--skip-repo-update)
+		-P|--skip-repo-update)
 			skipRepoUpdate=true
 		;;
 		-D|--skip-deploy)
@@ -110,6 +114,9 @@ done
 # Sanity check options
 if [[ "$repoPath" = "" ]]; then
 	errors[${#errors[@]}]="Empty repo path specified"
+fi
+if [[ "$remote" = "" ]]; then
+	errors[${#errors[@]}]="Empty remote repository specified"
 fi
 if [[ "$branch" = "" ]]; then
 	errors[${#errors[@]}]="Empty branch name specified"
@@ -180,8 +187,10 @@ MODE:
 OPTIONS:
     Defaults shown here in (parentheses) are for the current mode ($mode):
 
-    -r, --repo-path=PATH          Path to the local git repository
+    -p, --repo-path=PATH          Path to the local git repository
                                   ($defaultRepoPath)
+    -r, --remote=REMOTE           Remote repository to pull updates from
+                                  ($defaultRemote)
     -b, --branch=BRANCH           Branch to check out before retrieving updates
                                   ($defaultBranch)
     -d, --deploy-path=PATH        Path containing deployment directories
@@ -196,7 +205,7 @@ OPTIONS:
     -l, --symlink-name=NAME       Name of the symlink to create; this should
                                   match external configuration ($defaultSymlinkName)
     -s, --restart-service=SERVICE Name of service to restart ($defaultService)
-    -R, --skip-repo-update        Don't pull latest changes from upstream
+    -P, --skip-repo-update        Don't pull latest changes from upstream
                                   repository ($defaultSkipRepoUpdate)
     -D, --skip-deploy             Don't deploy changes into "live" directories
                                   ($defaultSkipDeploy)
@@ -214,11 +223,11 @@ echo "******** DEPLOYING $mode ********" | tr '[:lower:]' '[:upper:]'
 
 # Pull changes from remote repository
 if [[ "$skipRepoUpdate" != true ]]; then
-	echo "Pulling latest changes from branch '$branch' into repository '$repoPath'..."
+	echo "Pulling latest changes from branch '$branch' on remote '$remote' into repository '$repoPath'..."
 
 	pushd "$repoPath" >/dev/null
 	git checkout $branch
-	git pull origin $branch
+	git pull $remote $branch
 	popd >/dev/null
 
 	echo "Done pulling latest changes"
@@ -263,11 +272,11 @@ fi
 
 # Tag and push to remote repository
 if [[ $skipTag != true ]]; then
-	echo "Adding tag '$tagFullName' for the deployed version..."
+	echo "Adding tag '$tagFullName' for the deployed version and pushing tag to remote '$remote'..."
 
 	pushd "$repoPath" >/dev/null
-	git tag -a "$tagFullName" -m "Tagging $tagFullName [from deployment script, deploy-wamcmis]"
-	git push origin "$tagFullName"
+	git tag -a "$tagFullName" -m "Tagging $tagFullName [from deployment script $0]"
+	git push $remote "$tagFullName"
 	popd >/dev/null
 
 	echo "Done adding tag for the deployed version"
