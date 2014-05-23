@@ -21,6 +21,7 @@ set -u
 # If these are changed, you'll need to pass arguments to `deploy-cmis`
 mkdir -p /data/github
 mkdir -p /data/cmis/collectiveaccess/providence
+mkdir -p /data/cmis/collectiveaccess/cmis-local-conf
 mkdir -p /data/cmis/collectiveaccess/media
 
 # Clone repositories
@@ -31,4 +32,3 @@ git clone git@github.com:wamuseum/cmis-local-conf
 
 # Done
 echo You should now run deploy-cmis
-
