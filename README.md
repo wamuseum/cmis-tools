@@ -2,7 +2,40 @@
 
 Tools for the WAM CMIS project
 
+## check-environment
+
+Checks for the existence of a CollectiveAccess installation and the definition of the `$COLLECTIVEACCESS_HOME` environment variable.
+Other scripts use it to perform a basic sanity check before proceeding.
+
+    USAGE:
+        check-environment
+
+In scripts with `set -e`, simply running the `check-environment` script will cause the calling script to abort on failure.
+However it is recommended to use a construct such as:
+
+    check-environment || exit 1
+
+Or:
+
+    if [[ ! check-environment ]]; then
+        echo 'Environment check failed, bailing out'
+        exit 1
+    fi
+
+## init-wamcmis
+
+Initialisation script for providence / CMIS.
+This script is intended to be run _once_ per environment, and creates all the necessary directories and performs initial clones of git repositories.
+Everything in this script is hardcoded, there are no arguments.
+
+    USAGE:
+        init-wamcmis
+
+Note that this script does not do the manual configuration recommended in the subsection under `deploy-wamcmis`.
+
 ## deploy-wamcmis
+
+Main deployment script for providence / CMIS.
 
 ### Configuration
 
@@ -43,26 +76,47 @@ The script will normally perform the following five steps, each of which may be 
 ### Command Line Usage
 
     USAGE:
-        deploy-wamcmis [OPTIONS]
+        deploy-wamcmis [MODE] [OPTIONS]
+
+    MODE:
+	    The mode sets the defaults for all of the options:
+
+	    providence         Deploy the software code for providence
+	    cmis-local-conf    Deploy the local configuration
+	    all                Deploy both providence and local configuration
+
+	    The "all" mode, which is the default, is a synonym for running the
+	    "providence" mode followed if successful by the "cmis-local-conf" mode.
 
     OPTIONS:
-        -c, --clone-path=PATH         Path to the local git clone
+        Defaults shown here in (parentheses) are for the current mode (providence):
+
+        -p, --repo-path=PATH          Path to the local git repository
                                       (/data/github/providence)
-        -p, --target-parent-path=PATH Path containing deployment subdirs
+        -r, --remote=REMOTE           Remote repository to pull updates from
+                                      (origin)
+        -b, --branch=BRANCH           Branch to check out before retrieving updates
+                                      (develop)
+        -d, --deploy-path=PATH        Path containing deployment directories
                                       (/data/cmis/collectiveaccess/providence)
+        -m, --media-path=PATH         Path to the media directory
+                                      (/data/cmis/collectiveaccess/media)
         -t, --tag-name=NAME           Name of the tag, this is used for the local
                                       subdir name and (optionally) to create a tag
                                       in the repo (defaults to current date)
         -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
                                       used for tag name only (wamuseum_)
-        -s, --symlink-name=NAME       Name of the symlink to create; this should
-                                      match server configuration (current)
-        -r, --restart-service=SERVICE Name of service to restart (php5-fpm)
-        -P, --skip-pull               Don't pull latest changes from upstream
-        -D, --skip-deploy             Don't copy changes from clone to target
-        -L, --skip-link               Don't create a new link in target directory
-        -R, --skip-restart-server     Don't restart any service
-        -T, --skip-push-tag           Don't create and push a tag
+        -l, --symlink-name=NAME       Name of the symlink to create; this should
+                                      match external configuration (current)
+        -s, --restart-service=SERVICE Name of service to restart (php5-fpm)
+        -P, --skip-repo-update        Don't pull latest changes from upstream
+                                      repository (false)
+        -D, --skip-deploy             Don't deploy changes into "live" directories
+                                      (false)
+        -M, --skip-media-link         Don't create a link to external media path,
+                                      use new directory under deployment path (false)
+        -T, --skip-tag                Don't create and push a tag (false)
+        -S, --skip-restart-server     Don't restart any service (false)
         -h, --help                    Show this help text and quit
 
 Notes:
@@ -86,24 +140,36 @@ The deployment script does not currently handle deployment reversals, these must
   2. `git tag -d [tag-prefix][tag-name]` to remove the tag from the local repo (e.g. with defaults and removing a version 20140423154109, this is `git tag -d wamuseuem_20140423154109`).
   3. `git push origin :refs/tags/[tag-prefix][tag-name]` to push the removal of the tag to the remote repo (e.g. with defaults and removing a version 20140423154109, this is `git push origin :refs/tags/wamuseum_20140423154109`).
 
-## checkCollectiveAccess
+## export-mysql
 
-A utility script to check for the existance of a CollectiveAccess installation and the definition of the `$COLLECTIVEACCESS_HOME` environment variable. Other scripts can use it for checks.
+Exports the database contents to a zipped SQL file in the current working directory, or specified directory.
 
-_usage_:
-```
-checkCollectiveAccess
-```
+    USAGE:
+        export-mysql [EXPORT_PATH]
+
+## export-profile
+
+Exports an installation profile from a CollectiveAccess installation and then removes the superfluous taxonomy terms as these are loaded with the records via import scripts.
+It is configured to replace the `wamcmis.xml` file stored at `install/profiles/xml/` in `$COLLECTIVEACCESS_HOME` by default, or in the specified directory.
+
+    USAGE:
+        export-profile [EXPORT_PATH]
+
+## backup-mysql
+
+Higher level script that uses `export-mysql` to do the work.
+Called directly by a cron job to execute backups.
+Rotates backups so that only a given number are kept (number defined by $backupsToKeep in the script).
+
+## backup-profile
+
+Higher level script that uses `export-profile` to do the work.
+Called directly by a cron job to execute backups.
+Rotates backups so that only a given number are kept (number defined by $backupsToKeep in the script).
 
 ## switchdb
 
-This is a development tool which automates switching in of a relevant setup file, which allows use of different databases and configurations.
+Development tool which automates switching in of a relevant setup file, which allows use of different databases and configurations.
 
-## exportCaProfile
-
-This script exports an installation profile from a CollectiveAccess installation and then removes the superfluous taxonomy terms as these are loaded with the records via import scripts. It is configured to replace the `wamcmis.xml` file stored at `install/profiles/xml/` in `$COLLECTIVEACCESS_HOME`.
-
-_usage_:
-```
-exportCaProfile
-```
+    USAGE:
+        switchdb SETTINGS_FILE
