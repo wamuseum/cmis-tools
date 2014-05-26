@@ -13,9 +13,13 @@ if ! which caUtils > /dev/null; then
     exit 1
 fi
 echo -e "\tcaUtils found at:\t\t`which caUtils`"
-if [ ! -d $COLLECTIVEACCESS_HOME ]; then
+
+if [ ! -v COLLECTIVEACCESS_HOME ]; then
     echo "You should have the COLLECTIVEACCESS_HOME environment variable defined"
     exit 1
 fi
+if [ ! -d "$COLLECTIVEACCESS_HOME" ]; then
+    echo "The value of the COLLECTIVEACCESS_HOME environment variable should be the path to your CollectiveAccess installation"
+    exit 1
+fi
 echo -e "\tCOLLECTIVEACCESS_HOME set to:\t$COLLECTIVEACCESS_HOME"
-
