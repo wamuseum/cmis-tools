@@ -14,13 +14,21 @@ set -e
 tools_path=`dirname $0`
 $tools_path/check-environment
 
+# Settings
+profile=wamcmis
+admin_email="dev@gaiaresources.com.au"
+if [[ $# > 0 ]]; then
+	admin_email=$1
+fi
+
 # Run the installation
+echo "Performing test installation of profile '$profile' with administrator '$admin_email'"
 pushd $COLLECTIVEACCESS_HOME >/dev/null
-install_output=`support/bin/caUtils install --hostname=localhost --setup="$tools_path/../conf/test-install/setup-tests.php" --profile-name=wamcmis --admin-email=dev@gaiaresources.com.au`
+install_output=`support/bin/caUtils install --hostname=localhost --setup="$tools_path/../conf/test-install/setup-tests.php" --profile-name=$profile --admin-email=$admin_email`
 popd >/dev/null
 
 # Check result; the best we can do here is to inspect the output and look for a matched regex
-if [[ "$install_output" =~ errors?\ occurred ]]; then
+if [[ "$install_output" =~ errors?\ occurred || "$install_output" =~ Invalid\ options?\ specified ]]; then
 	echo -e "Errors occurred, full output follows:\n\n$install_output\n\n"
 	exit 1
 else
