@@ -8,19 +8,15 @@
 set -u
 set -e
 
-# Constants
-db_name=ca
-db_user=root
-db_password=password
-profile=wamcmis
-admin_email=dev@gaiaresources.com.au
-admin_password=password
+# Initial settings
+config_filename="`dirname $0`/../conf/reset-ca/$USER.conf"
+if [ ! -e $config_filename ]; then
+	echo "You do not have a configuration file, '$config_filename', please create this file and try again"
+	exit 1
+fi
+source $config_filename
 
 # Get options
-drop_db=true
-create_db=true
-install=true
-reset_password=true
 show_usage=false
 exit_code=0
 for opt in "$@"; do
@@ -61,11 +57,11 @@ fi
 pushd $COLLECTIVEACCESS_HOME >/dev/null
 if [ "$drop_db" = "true" ]; then
 	echo "Deleting existing '$db_name' database"
-	yes | mysqladmin -u$db_user -p$db_password drop $db_name
+	yes | mysqladmin $db_userpass drop $db_name
 fi
 if [ "$create_db" = "true" ]; then
 	echo "Creating new '$db_name' database schema"
-	mysqladmin -u$db_user -p$db_password create $db_name
+	mysqladmin $db_userpass create $db_name
 fi
 if [ "$install" = "true" ]; then
 	echo "Installing from installation profile"
@@ -76,3 +72,4 @@ if [ "$reset_password" = "true" ]; then
 	support/bin/caUtils reset-password -u administrator -p $admin_password
 fi
 popd >/dev/null
+echo "Reset CollectiveAccess completed."
