@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+# Simple developer tool to blow away and recreate a blank CA database, possibly also installing a profile.  Most
+# settings are currently hardcoded.
+#
+
+# Halt on undefined variables and errors
+set -u
+set -e
+
+# Initial settings
+config_filename="`dirname $0`/../conf/reset-ca/$USER.conf"
+if [ ! -e $config_filename ]; then
+	echo "You do not have a configuration file, '$config_filename', please create this file and try again"
+	exit 1
+fi
+source $config_filename
+
+# Get options
+show_usage=false
+exit_code=0
+for opt in "$@"; do
+	case "$opt" in
+		-d|--no-drop-db)
+			drop_db=false
+		;;
+		-c|--no-create-db)
+			drop_db=false
+			create_db=false
+		;;
+		-i|--no-install)
+			install=false
+			reset_password=false
+		;;
+		-p|--no-reset-password)
+			reset_password=false
+		;;
+		-h|--help)
+			show_usage=true
+		;;
+		*)
+			echo "Unknown option: $opt"
+			show_usage=true
+			exit_code=1
+		;;
+	esac
+done
+
+# Show usage if required
+if [ "$show_usage" = "true" ]; then
+	echo "USAGE: $0 [-d|--no-drop-db] [-c|--no-create-db] [-i|no-install] [-p|--no-reset-password] [-h|--help]"
+	echo "-c implies -d, -i implies -p, -h shows this help and exits"
+	exit $exit_code
+fi
+
+# Process using $COLLECTIVEACCESS_HOME as working directory
+pushd $COLLECTIVEACCESS_HOME >/dev/null
+if [ "$drop_db" = "true" ]; then
+	echo "Deleting existing '$db_name' database"
+	yes | mysqladmin $db_userpass drop $db_name
+fi
+if [ "$create_db" = "true" ]; then
+	echo "Creating new '$db_name' database schema"
+	mysqladmin $db_userpass create $db_name
+fi
+if [ "$install" = "true" ]; then
+	echo "Installing from installation profile"
+	support/bin/caUtils install -n $profile -e $admin_email
+fi
+if [ "$reset_password" = "true" ]; then
+	echo "Resetting administrator password"
+	support/bin/caUtils reset-password -u administrator -p $admin_password
+fi
+popd >/dev/null
+echo "Reset CollectiveAccess completed."
