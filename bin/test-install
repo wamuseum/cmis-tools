@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Installation test script.
+#
+# This script encapsulates an integration test, which installs a profile into a specified database, and confirms there
+# are no errors with the installation.
+#
+
+# Break on any undefined variable or any error.
+set -u
+set -e
+
+# Check setup
+tools_path=`dirname $0`
+$tools_path/check-environment
+
+# Run the installation
+pushd $COLLECTIVEACCESS_HOME >/dev/null
+install_output=`support/bin/caUtils install --hostname=localhost --setup="$tools_path/../conf/test-install/setup-tests.php" --profile-name=wamcmis --admin-email=dev@gaiaresources.com.au`
+popd >/dev/null
+
+# Check result; the best we can do here is to inspect the output and look for a matched regex
+if [[ "$install_output" =~ errors?\ occurred ]]; then
+	echo -e "Errors occurred, full output follows:\n\n$install_output\n\n"
+	exit 1
+else
+	echo -e "Installation successful!\n\n"
+	exit 0
+fi
