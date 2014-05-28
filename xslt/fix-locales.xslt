@@ -9,11 +9,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	</xsl:template>
  
 	<!--replace replace en_US labels-->
-	<xsl:template match="setting[@name = 'label'][@locale = 'en_US']">
-			<setting name="label" locale="en_AU"><xsl:value-of select="current()" /></setting>
-	</xsl:template>
-	<xsl:template match="setting[@name = 'add_label'][@locale = 'en_US']">
-		<setting name="add_label" locale="en_AU"><xsl:value-of select="current()" /></setting>
-	</xsl:template>
+	<xsl:template match="setting[@name='label'][@locale='en_US']/@locale">en_AU</xsl:template>
+	<xsl:template match="setting[@name='add_label'][@locale='en_US']/@locale">en_AU</xsl:template>
 
 </xsl:stylesheet>
