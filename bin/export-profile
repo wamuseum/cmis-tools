@@ -27,7 +27,7 @@ profileFileName="wamcmis.xml"
 profileName='Western Australian Museum CMIS'
 profileUrl='http://wamwpcmis.da.wa.gov.au'
 profileDescription='Western Australian Museum Collection Managment Information System'
-xslt="`dirname $0`/../xslt/strip-taxonomy.xslt"
+xsltDir="`dirname $0`/../xslt/"
 
 # Determine the export path
 if [ $# -gt 0 ]; then
@@ -39,7 +39,12 @@ fi
 # Export the profile
 echo "Now exporting profile"
 caUtils export-profile -u "$profileUrl" -d "$profileDescription" -n "$profileName" -o "$profilePath.export"
-xsltproc "$xslt" "$profilePath.export" > "$profilePath.stripped"
-mv "$profilePath.stripped" "$profilePath"
-rm "$profilePath.export"
+
+echo "Now applying transformations"
+find "$xsltDir" -name '*.xslt'| while read xslt
+do
+	xsltproc "$xslt" "$profilePath.export" > "$profilePath.stripped"
+	mv "$profilePath.stripped" "$profilePath.export"
+done
+mv "$profilePath.export" "$profilePath"
 
