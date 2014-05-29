@@ -29,6 +29,7 @@ cd /data/github
 git clone git@github.com:wamuseum/providence
 git clone git@github.com:wamuseum/cmis-tools
 git clone git@github.com:wamuseum/cmis-local-conf
+git clone git@github.com:wamuseum/cmis-import-scripts
 
 # Done
 echo You should now run deploy-cmis
