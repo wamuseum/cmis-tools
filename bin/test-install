@@ -29,9 +29,9 @@ popd >/dev/null
 
 # Check result; the best we can do here is to inspect the output and look for a matched regex
 if [[ "$install_output" =~ errors?\ occurred || "$install_output" =~ Invalid\ options?\ specified ]]; then
-	echo -e "Errors occurred, full output follows:\n\n$install_output\n\n"
+	echo -e "Errors occurred. Full output follows:\n\n$install_output\n\n"
 	exit 1
 else
-	echo -e "Installation successful!\n\n"
+	echo -e "Installation successful! Full output follows:\n\n$install_output\n\n"
 	exit 0
 fi
