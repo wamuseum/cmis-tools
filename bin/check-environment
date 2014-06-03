@@ -8,22 +8,22 @@
 set -u
 
 if ! which caUtils > /dev/null; then
-    echo "ERROR: You need to have caUtils from the CollectiveAccess installation directory on your PATH"
-    echo "You can find caUtils in the ./support/bin directory, relative to your providence installation"
-    exit 10
+	echo "ERROR: You need to have caUtils from the CollectiveAccess installation directory on your PATH"
+	echo "You can find caUtils in the ./support/bin directory, relative to your providence installation"
+	exit 10
 fi
 echo -e "\tcaUtils found at:\t\t`which caUtils`"
 
 if [ ! -v COLLECTIVEACCESS_HOME ]; then
 	echo "ERROR: COLLECTIVEACCESS_HOME is not set"
 	echo "The value of the COLLECTIVEACCESS_HOME environment variable should be a directory containing your setup.php file"
-    exit 20
+	exit 20
 fi
 if [ ! -d "$COLLECTIVEACCESS_HOME" ]; then
 	echo "ERROR: COLLECTIVEACCESS_HOME is not a directory"
 	echo "The value of the COLLECTIVEACCESS_HOME environment variable should be a directory containing your setup.php file"
 	echo "Current value: $COLLECTIVEACCESS_HOME"
-    exit 21
+	exit 21
 fi
 if [ ! -e "$COLLECTIVEACCESS_HOME/setup.php" ]; then
 	echo "ERROR: COLLECTIVEACCESS_HOME does not contain setup.php"
