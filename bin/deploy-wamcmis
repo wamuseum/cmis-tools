@@ -224,19 +224,16 @@ echo "******** DEPLOYING $mode ********" | tr '[:lower:]' '[:upper:]'
 # Pull changes from remote repository
 if [[ "$skipRepoUpdate" != true ]]; then
 	echo "Pulling latest changes from branch '$branch' on remote '$remote' into repository '$repoPath'..."
-
 	pushd "$repoPath" >/dev/null
 	git checkout $branch
 	git pull $remote $branch
 	popd >/dev/null
-
 	echo "Done pulling latest changes"
 fi
 
 # Deploy to live directory
 if [[ "$skipDeploy" != true ]]; then
 	echo "Deploying latest changes to '$deployStagePath'..."
-
 	rsync -a --exclude=".git*" "$repoPath/" "$deployStagePath"
 	if [[ -e "$deploySymlinkPath/$setupFileName" ]]; then
 		echo "Copying current $setupFileName into stage path"
@@ -247,39 +244,41 @@ if [[ "$skipDeploy" != true ]]; then
 		rm $deploySymlinkPath
 	fi
 	ln -s "$deployStagePath" "$deploySymlinkPath"
-
 	echo "Done deploying latest changes..."
 fi
 
 # Setup external media directory
 if [[ "$skipMediaLink" != true ]]; then
 	echo "Linking to external media path '$mediaPath'..."
-
 	rm -fR "$deployStagePath/$mediaSymlinkName"
 	ln -s "$mediaPath" "$deployStagePath/$mediaSymlinkName"
-
 	echo "Done linking to external media path..."
 fi
 
 # Restart service
 if [[ $skipRestartService != true ]]; then
 	echo "Restarting service '$service'..."
-
 	sudo service $service restart
-
 	echo "Done restarting service $service"
 fi
 
 # Tag and push to remote repository
 if [[ $skipTag != true ]]; then
 	echo "Adding tag '$tagFullName' for the deployed version and pushing tag to remote '$remote'..."
-
 	pushd "$repoPath" >/dev/null
 	git tag -a "$tagFullName" -m "Tagging $tagFullName [from deployment script $0]"
 	git push $remote "$tagFullName"
 	popd >/dev/null
-
 	echo "Done adding tag for the deployed version"
 fi
 
+# Do a `git fetch` to fix weird issue with local branch being ahead
+echo "Cleaning up..."
+pushd "$repoPath" >/dev/null
+git fetch
+popd >/dev/null
+echo "Done cleaning up"
+
+# Done
 echo "******** $mode DEPLOYMENT COMPLETED IN $SECONDS SECONDS ********" | tr '[:lower:]' '[:upper:]'
+
