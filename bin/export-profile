@@ -43,8 +43,8 @@ caUtils export-profile -u "$profileUrl" -d "$profileDescription" -n "$profileNam
 echo "Now applying transformations"
 find "$xsltDir" -name '*.xslt'| while read xslt
 do
-	xsltproc "$xslt" "$profilePath.export" > "$profilePath.stripped"
-	mv "$profilePath.stripped" "$profilePath.export"
+	echo "Applying transformation: $xslt"
+	xsltproc "$xslt" "$profilePath.export" > "$profilePath.transformed"
+	mv "$profilePath.transformed" "$profilePath.export"
 done
 mv "$profilePath.export" "$profilePath"
-
