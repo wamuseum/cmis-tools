@@ -64,7 +64,7 @@ if [ "$create_db" = "true" ]; then
 	mysqladmin $db_userpass create $db_name
 fi
 if [ "$install" = "true" ]; then
-	echo "Installing from installation profile"
+	echo "Installing from installation profile '$profile'"
 	support/bin/caUtils install -n $profile -e $admin_email
 fi
 if [ "$reset_password" = "true" ]; then
