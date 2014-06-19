@@ -272,7 +272,7 @@ fi
 if [[ "$skipMediaLink" != true ]]; then
 	echo "Linking to external media path '$mediaPath'..."
 
-	rm -fR "$deployStagePath/$mediaSymlinkName"
+	rm "$deployStagePath/$mediaSymlinkName"
 	ln -s "$mediaPath" "$deployStagePath/$mediaSymlinkName"
 
 	echo "Done linking to external media path..."
@@ -282,7 +282,7 @@ fi
 if [[ "$skipImportLink" != true ]]; then
 	echo "Linking to external import path '$importPath'..."
 
-	rm -fR "$deployStagePath/$importSymlinkName"
+	rm "$deployStagePath/$importSymlinkName"
 	ln -s "$importPath" "$deployStagePath/$importSymlinkName"
 
 	echo "Done linking to external import path..."
