@@ -11,11 +11,16 @@
 # export PATH="$PATH:/data/github/cmis-tools"
 #
 
-# Halt on any errors
+# Halt on any errors or undefined variables
 set -e
-
-# Halt on any undefined variable
 set -u
+
+# Parameters
+git_base="git@github.com:"
+if [[ $# > 0 && $1 = "https" ]]; then
+	git_base="https://github.com/"
+fi
+echo "Using git_base of '$git_base'"
 
 # Create directories
 # If these are changed, you'll need to pass arguments to `deploy-cmis`
@@ -23,13 +28,14 @@ mkdir -p /data/github
 mkdir -p /data/cmis/collectiveaccess/providence
 mkdir -p /data/cmis/collectiveaccess/cmis-local-conf
 mkdir -p /data/cmis/collectiveaccess/media
+mkdir -p /data/cmis/collectiveaccess/import
 
 # Clone repositories
 cd /data/github
-git clone git@github.com:wamuseum/providence
-git clone git@github.com:wamuseum/cmis-tools
-git clone git@github.com:wamuseum/cmis-local-conf
-git clone git@github.com:wamuseum/cmis-import-scripts
+git clone ${git_base}wamuseum/providence
+git clone ${git_base}wamuseum/cmis-tools
+git clone ${git_base}wamuseum/cmis-local-conf
+git clone ${git_base}wamuseum/cmis-import-scripts
 
 # Done
 echo You should now run deploy-cmis

@@ -6,15 +6,14 @@
 # initial setup or updates involving a database migration.
 #
 
-# Halt on any errors
+# Halt on any errors or undefined variables
 set -e
-
-# Halt on undefined variables
 set -u
 
 # Constants
 setupFileName=setup.php
 mediaSymlinkName=media
+importSymlinkName=import
 configPath=$(dirname $0)/../conf/deploy-wamcmis
 
 # Get mode argument
@@ -39,6 +38,7 @@ remote=$defaultRemote
 branch=$defaultBranch
 deployPath=$defaultDeployPath
 mediaPath=$defaultMediaPath
+importPath=$defaultImportPath
 tagPrefix=$defaultTagPrefix
 tagName=$defaultTagName
 symlinkName=$defaultSymlinkName
@@ -46,6 +46,7 @@ service=$defaultService
 skipRepoUpdate=$defaultSkipRepoUpdate
 skipDeploy=$defaultSkipDeploy
 skipMediaLink=$defaultSkipMediaLink
+skipImportLink=$defaultSkipImportLink
 skipTag=$defaultSkipTag
 skipRestartService=$defaultSkipRestartService
 
@@ -72,6 +73,9 @@ for opt in "$@"; do
 		-m=*|--media-path=*)
 			mediaPath="${opt#*=}"
 		;;
+		-i=*|--import-path=*)
+			importPath="${opt#*=}"
+		;;
 		-t=*|--tag-name=*)
 			tagName="${opt#*=}"
 		;;
@@ -92,6 +96,9 @@ for opt in "$@"; do
 		;;
 		-M|--skip-media-link)
 			skipMediaLink=true
+		;;
+		-I|--skip-import-link)
+			skipImportLink=true
 		;;
 		-T|--skip-tag)
 			skipTag=true
@@ -127,6 +134,9 @@ fi
 if [[ "$skipMediaLink" != true && "$mediaPath" = "" ]]; then
 	errors[${#errors[@]}]="Empty media path specified, use -M to skip linking to an external media location"
 fi
+if [[ "$skipImportLink" != true && "$importPath" = "" ]]; then
+	errors[${#errors[@]}]="Empty import path specified, use -I to skip linking to an external import location"
+fi
 if [[ "$skipTag" != true && "$tagName" = "" ]]; then
 	errors[${#errors[@]}]="Empty tag name specified, use -T to skip tagging"
 fi
@@ -155,6 +165,9 @@ if [[ ! -d $deployPath ]]; then
 fi
 if [[ "$skipMediaLink" != true && ! -d $mediaPath ]]; then
 	errors[${#errors[@]}]="Media path does not exist: $mediaPath"
+fi
+if [[ "$skipImportLink" != true && ! -d $importPath ]]; then
+	errors[${#errors[@]}]="Import path does not exist: $importPath"
 fi
 if [[ -d $deployStagePath ]]; then
 	errors[${#errors[@]}]="Stage path already exists: $deployStagePath"
@@ -197,6 +210,8 @@ OPTIONS:
                                   ($defaultDeployPath)
     -m, --media-path=PATH         Path to the media directory
                                   ($defaultMediaPath)
+    -i, --import-path=PATH        Path to the import directory
+                                  ($defaultImportPath)
     -t, --tag-name=NAME           Name of the tag, this is used for the local
                                   subdir name and (optionally) to create a tag
                                   in the repo (defaults to current date)
@@ -211,6 +226,8 @@ OPTIONS:
                                   ($defaultSkipDeploy)
     -M, --skip-media-link         Don't create a link to external media path,
                                   use new directory under deployment path ($defaultSkipMediaLink)
+    -I, --skip-import-link        Don't create a link to external import path,
+                                  use new directory under deployment path ($defaultSkipImportLink)
     -T, --skip-tag                Don't create and push a tag ($defaultSkipTag)
     -S, --skip-restart-server     Don't restart any service ($defaultSkipRestartService)
     -h, --help                    Show this help text and quit
@@ -255,10 +272,20 @@ fi
 if [[ "$skipMediaLink" != true ]]; then
 	echo "Linking to external media path '$mediaPath'..."
 
-	rm -fR "$deployStagePath/$mediaSymlinkName"
+	rm "$deployStagePath/$mediaSymlinkName"
 	ln -s "$mediaPath" "$deployStagePath/$mediaSymlinkName"
 
 	echo "Done linking to external media path..."
+fi
+
+# Setup external import directory
+if [[ "$skipImportLink" != true ]]; then
+	echo "Linking to external import path '$importPath'..."
+
+	rm "$deployStagePath/$importSymlinkName"
+	ln -s "$importPath" "$deployStagePath/$importSymlinkName"
+
+	echo "Done linking to external import path..."
 fi
 
 # Restart service
