@@ -56,64 +56,61 @@ errors=()
 
 # Parse parameters
 showHelp=false
-for opt in "$@"; do
-	case "$opt" in
-		-p=*|--repo-path=*)
-			repoPath="${opt#*=}"
+while getopts :p:r:b:d:m:i:t:x:l:s:PDMITSh OPTION; do
+	case "$OPTION" in
+		p)
+			repoPath="$OPTARG"
 		;;
-		-r=*|--remote=*)
-			remote="${opt#*=}"
+		r)
+			remote="$OPTARG"
 		;;
-		-b=*|--branch=*)
-			branch="${opt#*=}"
+		b)
+			branch="$OPTARG"
 		;;
-		-d=*|--deploy-path=*)
-			deployPath="${opt#*=}"
+		d)
+			deployPath="$OPTARG"
 		;;
-		-m=*|--media-path=*)
-			mediaPath="${opt#*=}"
+		m)
+			mediaPath="$OPTARG"
 		;;
-		-i=*|--import-path=*)
-			importPath="${opt#*=}"
+		i)
+			importPath="$OPTARG"
 		;;
-		-t=*|--tag-name=*)
-			tagName="${opt#*=}"
+		t)
+			tagName="$OPTARG"
 		;;
-		-x=*|--tag-prefix=*)
-			tagPrefix="${opt#*=}"
+		x)
+			tagPrefix="$OPTARG"
 		;;
-		-l=*|--symlink-name=*)
-			symlinkName="${opt#*=}"
+		l)
+			symlinkName="$OPTARG"
 		;;
-		-s=*|--restart-service=*)
-			service="${opt#*=}"
+		s)
+			service="$OPTARG"
 		;;
-		-P|--skip-repo-update)
+		P)
 			skipRepoUpdate=true
 		;;
-		-D|--skip-deploy)
+		D)
 			skipDeploy=true
 		;;
-		-M|--skip-media-link)
+		M)
 			skipMediaLink=true
 		;;
-		-I|--skip-import-link)
+		I)
 			skipImportLink=true
 		;;
-		-T|--skip-tag)
+		T)
 			skipTag=true
 		;;
-		-S|--skip-restart-service)
+		S)
 			skipRestartService=true
 		;;
-		-h|--help)
+		h)
 			showHelp=true
 		;;
-		*=*)
-			errors[${#errors[@]}]="Unrecognised option: ${opt%=*} with value: ${opt#*=}"
-		;;
 		*)
-			errors[${#errors[@]}]="Unrecognised option: $opt with no value"
+			errors[${#errors[@]}]="Unrecognised option: $OPTARG"
 		;;
 	esac
 done
@@ -132,10 +129,10 @@ if [[ "$deployPath" = "" ]]; then
 	errors[${#errors[@]}]="Empty deploy path specified"
 fi
 if [[ "$skipMediaLink" != true && "$mediaPath" = "" ]]; then
-	errors[${#errors[@]}]="Empty media path specified, use -M to skip linking to an external media location"
+	errors[${#errors[@]}]="Empty media path specified, use -M to skip linking to an external media path"
 fi
 if [[ "$skipImportLink" != true && "$importPath" = "" ]]; then
-	errors[${#errors[@]}]="Empty import path specified, use -I to skip linking to an external import location"
+	errors[${#errors[@]}]="Empty import path specified, use -I to skip linking to an external import path"
 fi
 if [[ "$skipTag" != true && "$tagName" = "" ]]; then
 	errors[${#errors[@]}]="Empty tag name specified, use -T to skip tagging"
@@ -145,9 +142,9 @@ if [[ "$symlinkName" = "" ]]; then
 fi
 if [[ "$skipRestartService" != true ]]; then
 	if [[ "$service" = "" ]]; then
-		errors[${#errors[@]}]="Empty service name specified, use -R to skip restarting service"
+		errors[${#errors[@]}]="Empty service name specified, use -S to skip restarting service"
 	elif [ ! -e "/etc/init.d/$service" ]; then
-		errors[${#errors[@]}]="Non-existent service name '$service' specified, use -R to skip restarting service"
+		errors[${#errors[@]}]="Non-existent service name '$service' specified, use -S to skip restarting service"
 	fi
 fi
 
@@ -158,19 +155,19 @@ tagFullName="$tagPrefix$tagName"
 
 # Path checking
 if [[ ! -d $repoPath ]]; then
-	errors[${#errors[@]}]="Repository path does not exist: $repoPath"
+	errors[${#errors[@]}]="Repository path does not exist: $repoPath, use -r to use a different path"
 fi
 if [[ ! -d $deployPath ]]; then
-	errors[${#errors[@]}]="Deploy path does not exist: $deployPath"
+	errors[${#errors[@]}]="Deploy path does not exist: $deployPath, use -d to use a different path"
 fi
 if [[ "$skipMediaLink" != true && ! -d $mediaPath ]]; then
-	errors[${#errors[@]}]="Media path does not exist: $mediaPath"
+	errors[${#errors[@]}]="Media path does not exist: $mediaPath, use -m to use a different path, or -M to skip linking to an external media path"
 fi
 if [[ "$skipImportLink" != true && ! -d $importPath ]]; then
-	errors[${#errors[@]}]="Import path does not exist: $importPath"
+	errors[${#errors[@]}]="Import path does not exist: $importPath, use -i to use a different path, or -I to skip linking to an external import path"
 fi
 if [[ -d $deployStagePath ]]; then
-	errors[${#errors[@]}]="Stage path already exists: $deployStagePath"
+	errors[${#errors[@]}]="Stage path already exists: $deployStagePath, use -d to use a different deployment path, or -t to use a different tag name"
 fi
 
 # Show errors and/or usage
@@ -188,14 +185,14 @@ USAGE:
     ${0##*/} [MODE] [OPTIONS]
 
 MODE:
-	The mode sets the defaults for all of the options:
+    The mode sets the defaults for all of the options:
 
-	providence         Deploy the software code for providence
-	cmis-local-conf    Deploy the local configuration
-	all                Deploy both providence and local configuration
+    providence         Deploy the software code for providence
+    cmis-local-conf    Deploy the local configuration
+    all                Deploy both providence and local configuration
 
-	The "all" mode, which is the default, is a synonym for running the
-	"providence" mode followed if successful by the "cmis-local-conf" mode.
+    The "all" mode, which is the default, is a synonym for running the
+    "providence" mode followed if successful by the "cmis-local-conf" mode.
 
 OPTIONS:
     Defaults shown here in (parentheses) are for the current mode ($mode):
