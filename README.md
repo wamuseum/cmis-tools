@@ -75,54 +75,44 @@ The script will normally perform the following five steps, each of which may be 
 
 ### Command Line Usage
 
-    USAGE:
-        deploy-wamcmis [MODE] [OPTIONS]
+USAGE:
+    deploy-wamcmis [MODE] [OPTIONS]
 
-    MODE:
-	    The mode sets the defaults for all of the options:
+MODE:
+    The mode sets the defaults for all of the options:
 
-	    providence         Deploy the software code for providence
-	    cmis-local-conf    Deploy the local configuration
-	    all                Deploy both providence and local configuration
+    providence         Deploy the software code for providence
+    cmis-local-conf    Deploy the local configuration
+    all                Deploy both providence and local configuration
 
-	    The "all" mode, which is the default, is a synonym for running the
-	    "providence" mode followed if successful by the "cmis-local-conf" mode.
+    The "all" mode, which is the default, is a synonym for running the
+    "providence" mode followed if successful by the "cmis-local-conf" mode.
 
-    OPTIONS:
-        Defaults shown here in (parentheses) are for the current mode (providence):
+OPTIONS:
+    Defaults shown here in (parentheses) are for the current mode (providence):
 
-        -p, --repo-path=PATH          Path to the local git repository
-                                      (/data/github/providence)
-        -r, --remote=REMOTE           Remote repository to pull updates from
-                                      (origin)
-        -b, --branch=BRANCH           Branch to check out before retrieving updates
-                                      (develop)
-        -d, --deploy-path=PATH        Path containing deployment directories
-                                      (/data/cmis/collectiveaccess/providence)
-        -m, --media-path=PATH         Path to the media directory
-                                      (/data/cmis/collectiveaccess/media)
-        -t, --tag-name=NAME           Name of the tag, this is used for the local
-                                      subdir name and (optionally) to create a tag
-                                      in the repo (defaults to current date)
-        -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
-                                      used for tag name only (wamuseum_)
-        -l, --symlink-name=NAME       Name of the symlink to create; this should
-                                      match external configuration (current)
-        -s, --restart-service=SERVICE Name of service to restart (php5-fpm)
-        -P, --skip-repo-update        Don't pull latest changes from upstream
-                                      repository (false)
-        -D, --skip-deploy             Don't deploy changes into "live" directories
-                                      (false)
-        -M, --skip-media-link         Don't create a link to external media path,
-                                      use new directory under deployment path (false)
-        -T, --skip-tag                Don't create and push a tag (false)
-        -S, --skip-restart-server     Don't restart any service (false)
-        -h, --help                    Show this help text and quit
-
-Notes:
-
-* Switches cannot be combined in standard *nix fashion, so `deploy-wamcmis -R -T` is valid, `deploy-wamcmis -RT` will not work.
-* An equal sign is always required for arguments with values, even for the short forms, so `deploy-wamcmis -c=/some/path` is valid, `deploy-wamcmis -c /some/path` is not.
+    -p PATH    Path to the local git repository (/data/github/providence)
+    -r REMOTE  Remote repository to pull updates from (origin)
+    -b BRANCH  Branch to check out before retrieving updates (develop)
+    -d PATH    Path containing deployment directories (/data/cmis/collectiveaccess/providence)
+    -m PATH    Path to the media directory (/data/cmis/collectiveaccess/media)
+    -i PATH    Path to the import directory (/data/cmis/collectiveaccess/import)
+    -t NAME    Name of the tag, this is used for the local subdir name and
+               (optionally) to create a tag in the repo (20140627114741)
+    -x PREFIX  Prefix to use before the tag name, this is used for tag name only
+               (wamuseum_)
+    -l NAME    Name of the symlink to create; this should match external
+               configuration (current)
+    -s SERVICE Name of service to restart (php5-fpm)
+    -P         Don't pull latest changes from upstream repository (false)
+    -D         Don't deploy changes into "live" directories (false)
+    -M         Don't create a link to external media path, use new directory
+               under deployment path (false)
+    -I         Don't create a link to external import path, use new directory
+               under deployment path (false)
+    -T         Don't create and push a tag (false)
+    -S         Don't restart any service (false)
+    -h         Show this help text and quit
 
 ### Reversing a Deployment
 

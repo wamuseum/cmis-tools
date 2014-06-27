@@ -197,37 +197,28 @@ MODE:
 OPTIONS:
     Defaults shown here in (parentheses) are for the current mode ($mode):
 
-    -p, --repo-path=PATH          Path to the local git repository
-                                  ($defaultRepoPath)
-    -r, --remote=REMOTE           Remote repository to pull updates from
-                                  ($defaultRemote)
-    -b, --branch=BRANCH           Branch to check out before retrieving updates
-                                  ($defaultBranch)
-    -d, --deploy-path=PATH        Path containing deployment directories
-                                  ($defaultDeployPath)
-    -m, --media-path=PATH         Path to the media directory
-                                  ($defaultMediaPath)
-    -i, --import-path=PATH        Path to the import directory
-                                  ($defaultImportPath)
-    -t, --tag-name=NAME           Name of the tag, this is used for the local
-                                  subdir name and (optionally) to create a tag
-                                  in the repo (defaults to current date)
-    -x, --tag-prefix=PREFIX       Prefix to use before the tag name, this is
-                                  used for tag name only ($defaultTagPrefix)
-    -l, --symlink-name=NAME       Name of the symlink to create; this should
-                                  match external configuration ($defaultSymlinkName)
-    -s, --restart-service=SERVICE Name of service to restart ($defaultService)
-    -P, --skip-repo-update        Don't pull latest changes from upstream
-                                  repository ($defaultSkipRepoUpdate)
-    -D, --skip-deploy             Don't deploy changes into "live" directories
-                                  ($defaultSkipDeploy)
-    -M, --skip-media-link         Don't create a link to external media path,
-                                  use new directory under deployment path ($defaultSkipMediaLink)
-    -I, --skip-import-link        Don't create a link to external import path,
-                                  use new directory under deployment path ($defaultSkipImportLink)
-    -T, --skip-tag                Don't create and push a tag ($defaultSkipTag)
-    -S, --skip-restart-server     Don't restart any service ($defaultSkipRestartService)
-    -h, --help                    Show this help text and quit
+    -p PATH    Path to the local git repository ($defaultRepoPath)
+    -r REMOTE  Remote repository to pull updates from ($defaultRemote)
+    -b BRANCH  Branch to check out before retrieving updates ($defaultBranch)
+    -d PATH    Path containing deployment directories ($defaultDeployPath)
+    -m PATH    Path to the media directory ($defaultMediaPath)
+    -i PATH    Path to the import directory ($defaultImportPath)
+    -t NAME    Name of the tag, this is used for the local subdir name and
+               (optionally) to create a tag in the repo ($defaultTagName)
+    -x PREFIX  Prefix to use before the tag name, this is used for tag name only
+               ($defaultTagPrefix)
+    -l NAME    Name of the symlink to create; this should match external
+               configuration ($defaultSymlinkName)
+    -s SERVICE Name of service to restart ($defaultService)
+    -P         Don't pull latest changes from upstream repository ($defaultSkipRepoUpdate)
+    -D         Don't deploy changes into "live" directories ($defaultSkipDeploy)
+    -M         Don't create a link to external media path, use new directory
+               under deployment path ($defaultSkipMediaLink)
+    -I         Don't create a link to external import path, use new directory
+               under deployment path ($defaultSkipImportLink)
+    -T         Don't create and push a tag ($defaultSkipTag)
+    -S         Don't restart any service ($defaultSkipRestartService)
+    -h         Show this help text and quit
 
 ENDHELP
 	exit 1
