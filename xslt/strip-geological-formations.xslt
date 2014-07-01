@@ -8,7 +8,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<!--replace the taxonomy list with a blank taxonomy containing just animalia-->
+	<!--replace the geological_formation list with a blank list -->
 	<xsl:template match="list[@code = 'geological_formation']">
 		<list code="geological_formation" hierarchical="0" system="0" vocabulary="1">
 		<labels>
