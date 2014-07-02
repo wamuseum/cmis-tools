@@ -13,7 +13,7 @@
 		<list code="eps_taxonomy" hierarchical="1" system="0" vocabulary="1">
 			<labels>
 				<label locale="en_AU">
-					<name>Taxon</name>
+					<name>EPS Taxonomy</name>
 				</label>
 			</labels>
 			<items>
