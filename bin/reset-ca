@@ -32,6 +32,9 @@ for opt in "$@"; do
 			install=false
 			reset_password=false
 		;;
+        -s|--no-create-seed)
+            create_seed=false
+        ;;
 		-p|--no-reset-password)
 			reset_password=false
 		;;
@@ -70,6 +73,11 @@ fi
 if [ "$reset_password" = "true" ]; then
 	echo "Resetting administrator password"
 	support/bin/caUtils reset-password -u administrator -p $admin_password
+fi
+if [ "$create_seed" = "true" ]; then
+    echo "Creating database seed"
+    mkdir -p "install/profiles/sql/"
+    mysqldump $db_userpass $db_name > "install/profiles/sql/$profile.sql"
 fi
 popd >/dev/null
 echo "Reset CollectiveAccess completed."
