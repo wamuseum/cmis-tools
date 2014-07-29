@@ -32,9 +32,9 @@ for opt in "$@"; do
 			install=false
 			reset_password=false
 		;;
-        -s|--no-create-seed)
-            create_seed=false
-        ;;
+		-s|--no-create-seed)
+			create_seed=false
+		;;
 		-p|--no-reset-password)
 			reset_password=false
 		;;
@@ -51,7 +51,7 @@ done
 
 # Show usage if required
 if [ "$show_usage" = "true" ]; then
-	echo "USAGE: $0 [-d|--no-drop-db] [-c|--no-create-db] [-i|no-install] [-p|--no-reset-password] [-h|--help]"
+	echo "USAGE: $0 [-d|--no-drop-db] [-c|--no-create-db] [-i|no-install] [-p|--no-reset-password] [-s|--no-create-seed] [-h|--help]"
 	echo "-c implies -d, -i implies -p, -h shows this help and exits"
 	exit $exit_code
 fi
@@ -75,9 +75,9 @@ if [ "$reset_password" = "true" ]; then
 	support/bin/caUtils reset-password -u administrator -p $admin_password
 fi
 if [ "$create_seed" = "true" ]; then
-    echo "Creating database seed"
-    mkdir -p "install/profiles/sql/"
-    mysqldump $db_userpass $db_name > "install/profiles/sql/$profile.sql"
+	echo "Creating database seed"
+	mkdir -p "install/profiles/sql/"
+	mysqldump $db_userpass $db_name > "install/profiles/sql/$profile`date -Iminutes`.sql"
 fi
 popd >/dev/null
 echo "Reset CollectiveAccess completed."
