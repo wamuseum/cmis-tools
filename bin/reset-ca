@@ -82,7 +82,7 @@ if [ "$install" = "true" ]; then
 		support/bin/caUtils install -n $profile -e $admin_email
 	fi
 fi
-if [ "$reset_password" = "true" ] & [ "$found_seed" = "false" ]; then
+if [ "$reset_password" = "true" ] && [ "$found_seed" = "false" ]; then
 	echo "Resetting administrator password"
 	support/bin/caUtils reset-password -u administrator -p $admin_password
 fi
