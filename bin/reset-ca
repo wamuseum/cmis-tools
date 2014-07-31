@@ -57,6 +57,10 @@ if [ "$show_usage" = "true" ]; then
 fi
 
 # Process using $COLLECTIVEACCESS_HOME as working directory
+seed_directory="install/profiles/sql"
+seed_hash=`crc32 "install/profiles/xml/$profile.xml"`
+seed_filename="$seed_directory/$profile.$seed_hash.sql"
+found_seed=false
 pushd $COLLECTIVEACCESS_HOME >/dev/null
 if [ "$drop_db" = "true" ]; then
 	echo "Deleting existing '$db_name' database"
@@ -68,16 +72,25 @@ if [ "$create_db" = "true" ]; then
 fi
 if [ "$install" = "true" ]; then
 	echo "Installing from installation profile '$profile'"
-	support/bin/caUtils install -n $profile -e $admin_email
+	echo "Checking for existing database seed at $seed_filename"
+	if [ -f $seed_filename ]; then
+		found_seed=true
+		echo "Database seed found at $seed_filename. Installing from there"
+		mysql $db_userpass $db_name< "$seed_filename"
+	else
+		echo "No Database seed found. Installing from profile"
+		support/bin/caUtils install -n $profile -e $admin_email
+	fi
 fi
-if [ "$reset_password" = "true" ]; then
+if [ "$reset_password" = "true" ] & [ "$found_seed" = "false" ]; then
 	echo "Resetting administrator password"
 	support/bin/caUtils reset-password -u administrator -p $admin_password
 fi
-if [ "$create_seed" = "true" ]; then
+if [ "$create_seed" = "true" ]  && [ "$found_seed" = "false" ]; then
 	echo "Creating database seed"
 	mkdir -p "install/profiles/sql/"
-	mysqldump $db_userpass $db_name > "install/profiles/sql/$profile`date -Iminutes`.sql"
+
+	mysqldump $db_userpass $db_name > "$seed_filename"
 fi
 popd >/dev/null
 echo "Reset CollectiveAccess completed."
