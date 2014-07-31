@@ -57,11 +57,13 @@ if [ "$show_usage" = "true" ]; then
 fi
 
 # Process using $COLLECTIVEACCESS_HOME as working directory
+pushd $COLLECTIVEACCESS_HOME >/dev/null
+# get the name of the database seed
+
 seed_directory="install/profiles/sql"
 seed_hash=`crc32 "install/profiles/xml/$profile.xml"`
 seed_filename="$seed_directory/$profile.$seed_hash.sql"
 found_seed=false
-pushd $COLLECTIVEACCESS_HOME >/dev/null
 if [ "$drop_db" = "true" ]; then
 	echo "Deleting existing '$db_name' database"
 	yes | mysqladmin $db_userpass drop $db_name
@@ -73,7 +75,7 @@ fi
 if [ "$install" = "true" ]; then
 	echo "Installing from installation profile '$profile'"
 	echo "Checking for existing database seed at $seed_filename"
-	if [ -f $seed_filename ]; then
+	if [ -f "$seed_filename" ]; then
 		found_seed=true
 		echo "Database seed found at $seed_filename. Installing from there"
 		mysql $db_userpass $db_name< "$seed_filename"
