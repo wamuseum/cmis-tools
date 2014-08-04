@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# WAM CMIS site mode switch script
+#
+# Allowed site modes are "default" (the site is running normally) and "maintenance" (the server is under maintenance
+# so the CMIS application is not currently available).  This script automates switching between modes.
+#
+
+# Stop on any error or undeclared variable
+set -e
+set -u
+
+# Change mode according to first program argument
+mode="$1"
+if [[ "$mode"="maintenance" ]]; then
+	echo "Switching site into maintenance mode"
+	a2ensite maintenance && a2dissite default && sudo service apache2 reload
+elif [[ "$mode"="default" ]]; then
+	echo "Switching site out of maintenance mode"
+	a2ensite default && a2dissite maintenance && sudo service apache2 reload
+else
+	echo "Unrecognised site mode '$mode' - must be either 'default' or 'maintenance'"
+fi
