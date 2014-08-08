@@ -12,6 +12,7 @@ set -u
 
 # Constants
 setupFileName=setup.php
+importsSetupFileName=setup.imports.php
 mediaSymlinkName=media
 importSymlinkName=import
 configPath=$(dirname $0)/../conf/deploy-wamcmis
@@ -243,6 +244,10 @@ if [[ "$skipDeploy" != true ]]; then
 	if [[ -e "$deploySymlinkPath/$setupFileName" ]]; then
 		echo "Copying current $setupFileName into stage path"
 		cp "$deploySymlinkPath/$setupFileName" "$deployStagePath"
+	fi
+	if [[ -e "$deploySymlinkPath/$importsSetupFileName" ]]; then
+		echo "Copying current $importsSetupFileName into stage path"
+		cp "$deploySymlinkPath/$importsSetupFileName" "$deployStagePath"
 	fi
 	if [[ -h $deploySymlinkPath ]]; then
 		echo "Removing old symlink"
