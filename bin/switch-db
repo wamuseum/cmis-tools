@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# Switch database connections by modifying the setup.php file
+#
+
+# Halt on errors and undefined variables
+set -e
+set -u
+
+# Make sure we have a CA installation available
+`dirname $0`/check-environment
+
+# Check the database name parameter
+if [[ $# = 0 ]]; then
+	echo You must supply a database name.
+	exit 1
+fi
+db=$1
+
+# Perform the replacement, create timestamped backup file
+sed -r -i.`date +%Y%m%d%H%M%S` "s/(define\(\"__CA_DB_DATABASE__\", ').*('\))/\1$db\2/" "$COLLECTIVEACCESS_HOME/setup.php"
