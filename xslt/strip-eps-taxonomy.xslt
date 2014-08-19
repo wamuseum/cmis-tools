@@ -17,7 +17,7 @@
 				</label>
 			</labels>
 			<items>
-				<item idno="eps_animalia" enabled="1" default="0">
+				<item idno="eps_animalia" enabled="1" default="0" type="scientific_name">
 					<labels>
 						<label locale="en_AU" preferred="1">
 							<name_singular>Animal</name_singular>
