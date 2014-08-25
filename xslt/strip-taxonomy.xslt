@@ -17,7 +17,7 @@
 				</label>
 			</labels>
 			<items>
-				<item idno="Animalia" enabled="1" default="0" type="scientific_name">
+				<item idno="Animalia" enabled="1" default="0" type="kingdom">
 					<labels>
 						<label locale="en_AU" preferred="1">
 							<name_singular>Animal</name_singular>
