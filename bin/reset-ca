@@ -62,6 +62,7 @@ pushd $COLLECTIVEACCESS_HOME >/dev/null
 
 seed_directory="install/profiles/sql"
 seed_hash=`crc32 "install/profiles/xml/$profile.xml"`
+seed_hash=${seed_hash}`crc32 "install/inc/schema_mysql.sql"`
 seed_filename="$seed_directory/$profile.$seed_hash.sql"
 found_seed=false
 if [ "$drop_db" = "true" ]; then
