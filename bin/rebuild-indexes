@@ -16,4 +16,4 @@ else
 fi
 ## Rebuild the search indexes in parallel
 ## --gnu as the version available in ubuntu 12.04 doesn't play nice without it
-parallel --gnu --eta --tag --progress 'nice caUtils rebuild-search-index -t {}' ::: "${tables[@]}"
+parallel --gnu --eta -u --progress 'nice caUtils rebuild-search-index -t {} > /tmp/cmis_rebuild_index_{}.out' ::: "${tables[@]}"
