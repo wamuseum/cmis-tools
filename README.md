@@ -170,3 +170,5 @@ Bash script to rebuild search indexes in parallel
 
     USAGE:
         rebuild-indexes
+      or
+        rebuild-indexes ca_objects ca_list_items
