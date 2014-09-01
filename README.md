@@ -163,3 +163,10 @@ Development tool which automates switching in of a relevant setup file, which al
 
     USAGE:
         switchdb SETTINGS_FILE
+
+## rebuild-indexes
+
+Bash script to rebuild search indexes in parallel
+
+    USAGE:
+        rebuild-indexes
