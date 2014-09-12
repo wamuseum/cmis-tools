@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# Simple developer tool to blow away caches
+#
+
+# Halt on undefined variables and errors
+set -u
+set -e
+pushd `dirname $0` > /dev/null
+check-environment
+popd
+
+rm $COLLECTIVEACCESS_HOME/app/tmp/*
+
