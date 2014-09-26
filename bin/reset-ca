@@ -7,7 +7,7 @@
 # Halt on undefined variables and errors
 set -u
 set -e
-
+skip_roles=''
 # Initial settings
 config_filename="`dirname $0`/../conf/reset-ca/$USER.conf"
 if [ ! -e $config_filename ]; then
@@ -37,6 +37,9 @@ for opt in "$@"; do
 		;;
 		-p|--no-reset-password)
 			reset_password=false
+	    ;;
+		-r|--skip-roles)
+			skip_roles=true
 		;;
 		-h|--help)
 			show_usage=true
@@ -74,6 +77,10 @@ if [ "$create_db" = "true" ]; then
 	mysqladmin $db_userpass create $db_name
 fi
 if [ "$install" = "true" ]; then
+    if [ "$skip_roles" = "true" ]; then
+        echo "Skipping Roles"
+        skip_roles="--skip-roles"
+    fi
 	echo "Installing from installation profile '$profile'"
 	echo "Checking for existing database seed at $seed_filename"
 	if [ -f "$seed_filename" ]; then
@@ -82,7 +89,7 @@ if [ "$install" = "true" ]; then
 		mysql $db_userpass $db_name< "$seed_filename"
 	else
 		echo "No Database seed found. Installing from profile"
-		support/bin/caUtils install -n $profile -e $admin_email
+		support/bin/caUtils install -n $profile -e $admin_email "$skip_roles"
 	fi
 fi
 if [ "$reset_password" = "true" ] && [ "$found_seed" = "false" ]; then
