@@ -38,7 +38,7 @@ fi
 
 # Export the profile
 echo "Now exporting profile"
-caUtils export-profile -u "$profileUrl" -d "$profileDescription" -n "$profileName" -o "$profilePath.export"
+caUtils export-profile -u "$profileUrl" -d "$profileDescription" -n "$profileName" -o "$profilePath.export" --fast-lists=100
 
 echo "Now applying transformations"
 find "$xsltDir" -name '*.xslt'| while read xslt
