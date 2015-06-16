@@ -172,3 +172,10 @@ Bash script to rebuild search indexes in parallel
         rebuild-indexes
       or
         rebuild-indexes ca_objects ca_list_items
+
+## process-queue
+
+Process the CA task queue with a lock file so more than a single copy doesn' run concurrently
+
+    USAGE:
+        process-queue
