@@ -5,7 +5,7 @@ set -u
 set -e
 
 # Number of backups to keep
-backupsToKeep=30
+backupsToKeep=15
 
 # Root path for all backups
 rootPath=/data/cmis/backups/mysql
