@@ -14,10 +14,10 @@ set -u
 mode="$1"
 if [[ "$mode"="maintenance" ]]; then
 	echo "Switching site into maintenance mode"
-	a2ensite maintenance && a2dissite default && sudo service apache2 reload
+	a2ensite maintenance && a2dissite cmis && sudo service apache2 reload
 elif [[ "$mode"="default" ]]; then
 	echo "Switching site out of maintenance mode"
-	a2ensite default && a2dissite maintenance && sudo service apache2 reload
+	a2ensite cmis && a2dissite maintenance && sudo service apache2 reload
 else
 	echo "Unrecognised site mode '$mode' - must be either 'default' or 'maintenance'"
 fi
