@@ -16,8 +16,8 @@ set -u
 `dirname $0`/check-environment
 
 # Constants
-databaseName=collectiveaccess
-dumpFileName=collectiveaccess.sql.gz
+databaseName=cmis
+dumpFileName=cmis.sql.gz
 
 # Determine the export path
 if [ $# -gt 0 ]; then
