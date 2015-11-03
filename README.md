@@ -93,7 +93,7 @@ The script will normally perform the following five steps, each of which may be 
 
         -p PATH    Path to the local git repository (/data/github/providence)
         -r REMOTE  Remote repository to pull updates from (origin)
-        -b BRANCH  Branch to check out before retrieving updates (develop)
+        -b BRANCH  Branch to check out before retrieving updates (master-fix)
         -d PATH    Path containing deployment directories (/data/cmis/collectiveaccess/providence)
         -m PATH    Path to the media directory (/data/cmis/collectiveaccess/media)
         -i PATH    Path to the import directory (/data/cmis/collectiveaccess/import)
