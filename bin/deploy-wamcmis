@@ -231,6 +231,7 @@ echo "******** DEPLOYING $mode ********" | tr '[:lower:]' '[:upper:]'
 if [[ "$skipRepoUpdate" != true ]]; then
 	echo "Pulling latest changes from branch '$branch' on remote '$remote' into repository '$repoPath'..."
 	pushd "$repoPath" >/dev/null
+	git fetch
 	git checkout $branch
 	git pull $remote $branch
 	popd >/dev/null
