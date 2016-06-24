@@ -10,7 +10,7 @@ fi
 #tables=( )
 if [ "$#" -eq 0 ]; then
 	echo "Defaulting to all tables"
-	tables=( ca_objects ca_occurrences ca_list_items ca_entities ca_relationship_types ca_loans ca_user_groups ca_collections ca_storage_locations ca_users ca_places ca_sets ca_object_representations ca_object_lots ca_orders ca_order_items ca_communications ca_tour_stops ca_comments ca_tags ca_tours ca_movements )
+	tables=( ca_list_items ca_objects ca_relationship_types ca_users ca_user_groups ca_storage_locations ca_places ca_occurrences ca_object_representations ca_entities ca_object_checkouts ca_object_lots ca_tour_stops ca_movements ca_item_tags ca_loans ca_item_comments ca_set_items ca_collections ca_tours ca_sets)
 else
 	tables=( "$@" )
 fi
