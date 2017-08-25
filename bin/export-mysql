@@ -28,5 +28,5 @@ fi
 
 # Export the database
 echo "Now exporting database"
-mysqldump $databaseName | gzip > $dumpPath
+mysqldump $databaseName | gzip --rsyncable > $dumpPath
 
